@@ -249,7 +249,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
             val expressionNode = parseExpression()
             if (index < tokens.size && tokens[index].type == TokenType.CLOSED_PARENTHESIS) {
                 index++
-                return expressionNode
+                return parseFactorial(parseIndex(expressionNode))
             } else throw IllegalArgumentException("Expected closing parenthesis")
         } else {
             if (tokens[index].type == TokenType.SUBTRACTION) {
@@ -262,7 +262,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
                             TokenType.NUMBER,
                             -((nextToken.value as Number).toDouble())
                         ))
-                        return parseNumber()
+                        return parseFactor()
                     } else if (nextToken.type == TokenType.IDENTIFIER || nextToken.type == TokenType.FUNCTION_CALL || nextToken.type == TokenType.OPEN_PARENTHESIS) {
                         tokens.add(index, Token(
                             TokenType.NUMBER,
