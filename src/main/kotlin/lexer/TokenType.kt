@@ -23,12 +23,16 @@ enum class TokenType {
     CLOSED_BRACKET("cbracket", ']'),
     OPEN_PARENTHESIS("oparen", '('),
     CLOSED_PARENTHESIS("cparen", ')'),
+    UNDEFINED("undefined", word = "undefined"),
+    COALESCING("coalescing"),
     WHITESPACE("white", ' ');
 
     val id: String;
-    val symbol: Char?;
-    constructor(id: String, symbol: Char? = null) {
+    val symbol: Char?
+    val word: String?
+    constructor(id: String, symbol: Char? = null, word: String? = null) {
         this.id = id;
         this.symbol = symbol;
+        this.word = word
     }
 }

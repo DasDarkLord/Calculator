@@ -8,6 +8,7 @@ import calcFunctions.classFunctions
 import calcFunctions.functions
 import calcFunctions.userFunctions
 import parser.TreeNode
+import prettierVersion
 import utils.multifactorial
 import utils.numToDouble
 import java.lang.Exception
@@ -79,7 +80,7 @@ object IdEvaluationType : ValueEvaluationType() {
             }
         }
 
-        return value.toString()
+        return Undefined
     }
 
     override val forType: String
@@ -118,7 +119,7 @@ object FunctionEvaluationType : EvaluationType {
             }
         }
 
-        return 0.0
+        return Undefined
     }
 }
 
@@ -129,7 +130,9 @@ object ClassFunctionEvaluationType : EvaluationType {
         get() = emptyList()
 
     override fun evaluate(tree: TreeNode): Any {
-        val affected = IdEvaluationType.evaluate(tree.left!!)
+        val affected =
+            if (tree.left!!.type == "id") IdEvaluationType.evaluate(tree.left)
+            else Evaluator.evaluateTree(tree.left)
 
         val functionTree = tree.right!!
 
@@ -148,9 +151,14 @@ object ClassFunctionEvaluationType : EvaluationType {
                             val reader = PatternSetReader(func.patternSet)
                             reader.readObjects(objs)
 
-                            func.execute(affected, reader.set)
+                            val newVal = func.execute(affected, reader.set)
+                            if (tree.left.type == "id") {
+                                if (!constants.containsKey(tree.left.value!!)) {
+                                    userConstants[listOf(tree.left.value as String)] = newVal
+                                }
+                            }
 
-                            return affected
+                            return newVal
                         } catch (ignored: Exception) {
                             ignored.printStackTrace()
                         }
@@ -159,7 +167,8 @@ object ClassFunctionEvaluationType : EvaluationType {
             }
         }
 
-        error("Failed to execute method")
+        System.err.println("Failed to execute method " + tree.value!!)
+        return Undefined
     }
 }
 
@@ -245,27 +254,56 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
         get() = "eq"
 }
 
+object CoalescingEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+        val leftEval = Evaluator.evaluateTree(left)
+        if (leftEval is Undefined) return Evaluator.evaluateTree(right)
+
+        return leftEval
+    }
+
+    override val forType: String
+        get() = "coalescing"
+}
+
 object IndexEvaluationType : LeftRightEvaluationType() {
     override fun evaluate(left: TreeNode, right: TreeNode): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Map<*, *>) {
-            if (!l.containsKey(r)) error("Map does not contain key $r")
+            if (!l.containsKey(r)) {
+                return Undefined
+            }
             return l[r]!!
         }
         if (l is List<*> || l is String) {
             val list: List<*> = if (l is String) l.toCharArray().asList() else l as List<*>
-            if (r !is Number) error("Index is not a number")
-            if (r.toInt() >= list.size) error("Index is out of bounds (" + r + " >= " + list.size + ")")
-            if (r.toInt() < 0) error("Index is smaller than 0")
+            if (r !is Number) {
+                return Undefined
+            }
+            if (r.toInt() >= list.size) {
+                return Undefined
+            }
+            if (r.toInt() < 0) {
+                return Undefined
+            }
             return list[r.toInt()]!!
         }
 
-        return 0
+        return Undefined
     }
 
     override val forType: String
         get() = "index"
+}
+
+object UndefinedEvaluationType : ValueEvaluationType() {
+    override fun evaluate(value: Any): Any {
+        return Undefined
+    }
+
+    override val forType: String
+        get() = "undefined"
 }
 
 // Operations
@@ -277,10 +315,10 @@ object AddEvaluationType : LeftRightEvaluationType() {
             return r.toDouble() + l.toDouble()
         }
         if (r is String || l is String) {
-            return l.toString() + r.toString()
+            return prettierVersion(l) + prettierVersion(r)
         }
 
-        return 0
+        return Undefined
     }
 
     override val forType: String
@@ -299,7 +337,7 @@ object SubEvaluationType : LeftRightEvaluationType() {
             return l.toString().replace(Regex(r.toString()), "")
         }
 
-        return 0
+        return Undefined
     }
 
     override val forType: String
@@ -315,14 +353,14 @@ object MulEvaluationType : LeftRightEvaluationType() {
         if (l is String || r is String) {
             val times = if (l is Number) l.toDouble() else if (r is Double) r.toDouble() else Double.NaN
             return if (times.isNaN()) {
-                l as String + r
+                l.toString() + r
             } else {
                 if (l is Number) r.toString().repeat(l.toInt())
                 else l.toString().repeat((r as Number).toInt())
             }
         }
 
-        return 0
+        return Undefined
     }
 
     override val forType: String
@@ -341,7 +379,7 @@ object DivEvaluationType : LeftRightEvaluationType() {
         if (r is String || l is String) {
             return l.toString().replace(r.toString(), "")
         }
-        return 0
+        return Undefined
     }
 
     override val forType: String
@@ -354,7 +392,7 @@ object PowEvaluationType : LeftRightEvaluationType() {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble().pow(r.toDouble())
-        return 0
+        return Undefined
     }
 
     override val forType: String
@@ -367,7 +405,7 @@ object ModulusEvaluationType : LeftRightEvaluationType() {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble() % r.toDouble()
-        return 0
+        return Undefined
     }
 
     override val forType: String

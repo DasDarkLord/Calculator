@@ -20,7 +20,11 @@ class NodeParser(private val tokens: MutableList<Token>) {
         var openParens = 0
         while (index < tokens.size) {
             if (tokens[index].type == TokenType.OPEN_PARENTHESIS) openParens++
+            if (tokens[index].type == TokenType.OPEN_BRACKET) openParens++
+            if (tokens[index].type == TokenType.OPEN_CURLY) openParens++
             if (tokens[index].type == TokenType.CLOSED_PARENTHESIS) openParens--
+            if (tokens[index].type == TokenType.CLOSED_BRACKET) openParens--
+            if (tokens[index].type == TokenType.CLOSED_CURLY) openParens--
 
             if (openParens == 0) break
 
@@ -53,6 +57,19 @@ class NodeParser(private val tokens: MutableList<Token>) {
             value = token.value,
             arguments = treeArguments
         )
+    }
+
+    private fun parseOtherStuff(node: TreeNode): TreeNode {
+        var isNodeChanged = true
+        var currentNode = node
+
+        while (isNodeChanged) {
+            val newNode = parseFactorial(parseIndex(parseClassFunction(currentNode)))
+            isNodeChanged = currentNode != newNode
+            currentNode = newNode
+        }
+
+        return currentNode
     }
 
     private fun parseIndex(node: TreeNode): TreeNode {
@@ -102,7 +119,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseClassFunction(node: TreeNode): TreeNode {
-        if (index > tokens.size) return node
+        if (index >= tokens.size) return node
         val token = tokens[index]
         if (token.type != TokenType.CLASS_FUNCTION_CALL) return node
 
@@ -113,57 +130,141 @@ class NodeParser(private val tokens: MutableList<Token>) {
         )
     }
 
+    private fun parseUndefined(): TreeNode {
+        val token = tokens[index]
+        index++
+        return TreeNode("undefined", value = token.value)
+    }
+
     private fun parseNumber(): TreeNode {
         val token = tokens[index]
         index++
-        return parseFactorial(TreeNode("number", value = token.value))
+        return parseOtherStuff(TreeNode("number", value = token.value))
     }
 
     private fun parseString(): TreeNode {
         val token = tokens[index]
         index++
-        return parseIndex(TreeNode("string", value = token.value))
+        return parseOtherStuff(TreeNode("string", value = token.value))
     }
 
     private fun parseIdentifier(): TreeNode {
         val token = tokens[index]
         index++
-        return parseFactorial(parseIndex(parseClassFunction(TreeNode("id", value = token.value))))
+        return parseOtherStuff(TreeNode("id", value = token.value))
     }
 
     private fun parseDictionary(): TreeNode {
-        val dict = mutableMapOf<Any, Any>()
-        index++
+        val map = mutableMapOf<Any, Any>()
+
+        var openParens = 0
+
+        val currentKeyTokens = mutableListOf<Token>()
+        val listKeyTokens = mutableListOf<MutableList<Token>>()
+
+        val currentValueTokens = mutableListOf<Token>()
+        val listValueTokens = mutableListOf<MutableList<Token>>()
 
         while (index < tokens.size && tokens[index].type != TokenType.CLOSED_CURLY) {
-            val key = Evaluator.evaluateTree(parseFactor())
+            if (tokens[index].type == TokenType.OPEN_PARENTHESIS) openParens++
+            if (tokens[index].type == TokenType.OPEN_BRACKET) openParens++
+            if (tokens[index].type == TokenType.OPEN_CURLY) openParens++
+            if (tokens[index].type == TokenType.CLOSED_PARENTHESIS) openParens--
+            if (tokens[index].type == TokenType.CLOSED_BRACKET) openParens--
+            if (tokens[index].type == TokenType.CLOSED_CURLY) openParens--
 
-            if (tokens[index].type != TokenType.COLON) break
-            else index++
+            if (openParens == 0) {
+                index++
+                break
+            }
 
-            val value = Evaluator.evaluateTree(parseFactor())
-            dict[key] = value
+            if (tokens[index].type == TokenType.COMMA && openParens == 1) {
+                listValueTokens.add(deepCopy(currentValueTokens))
+                currentValueTokens.clear()
+                currentKeyTokens.clear()
 
-            if (tokens[index].type == TokenType.COMMA) index++
+                index++
+                continue
+            }
+
+            if (tokens[index].type == TokenType.COLON && openParens == 1) {
+                listKeyTokens.add(deepCopy(currentKeyTokens))
+                currentKeyTokens.clear()
+                currentValueTokens.clear()
+
+                index++
+                continue
+            }
+
+            if (openParens == 1 && tokens[index].type == TokenType.OPEN_CURLY) {
+                index++
+                continue
+            }
+            currentKeyTokens.add(tokens[index])
+            currentValueTokens.add(tokens[index])
+
+            index++
         }
+        if (currentKeyTokens.isNotEmpty()) listKeyTokens.add(currentKeyTokens)
+        if (currentValueTokens.isNotEmpty()) listValueTokens.add(currentValueTokens)
+
         index++
 
-        return parseIndex(TreeNode("dict", value = dict))
+        for ((index, t) in listKeyTokens.withIndex()) {
+            if (index >= listValueTokens.size) break
+            map[Evaluator.evaluateTree(parseTokens(t))] = Evaluator.evaluateTree(parseTokens(listValueTokens[index]))
+        }
+
+        return TreeNode("dict", value = map)
     }
 
     private fun parseList(): TreeNode {
         val list = mutableListOf<Any>()
-        index++
 
-        while (index < tokens.size && tokens[index].type != TokenType.CLOSED_BRACKET) {
-            val value = Evaluator.evaluateTree(parseFactor())
-            list.add(value)
+        val currentTokens = mutableListOf<Token>()
+        val listTokens = mutableListOf<MutableList<Token>>()
 
-            if (tokens[index].type == TokenType.COMMA) index++
+        var openParens = 0
+
+        while (index < tokens.size) {
+            if (tokens[index].type == TokenType.OPEN_PARENTHESIS) openParens++
+            if (tokens[index].type == TokenType.OPEN_BRACKET) openParens++
+            if (tokens[index].type == TokenType.OPEN_CURLY) openParens++
+            if (tokens[index].type == TokenType.CLOSED_PARENTHESIS) openParens--
+            if (tokens[index].type == TokenType.CLOSED_BRACKET) openParens--
+            if (tokens[index].type == TokenType.CLOSED_CURLY) openParens--
+
+            if (openParens == 0) {
+                index++
+                break
+            }
+
+            if (tokens[index].type == TokenType.COMMA && openParens == 1) {
+                listTokens.add(deepCopy(currentTokens))
+                currentTokens.clear()
+
+                index++
+                continue
+            }
+
+            if (openParens == 1 && tokens[index].type == TokenType.OPEN_BRACKET) {
+                index++
+                continue
+            }
+
+            currentTokens.add(tokens[index])
+
+            index++
         }
+        if (currentTokens.isNotEmpty()) listTokens.add(currentTokens)
+
         index++
 
-        return parseIndex(TreeNode("list", value = list))
+        for (t in listTokens) {
+            list.add(Evaluator.evaluateTree(parseTokens(t)))
+        }
+
+        return parseOtherStuff(TreeNode("list", value = list))
     }
 
     private fun parseExpression(): TreeNode {
@@ -219,9 +320,22 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseImplicitMultipliction(): TreeNode {
-        var leftNode = parseFactor()
+        var leftNode = parseCoalescing()
 
         while (index < tokens.size && (tokens[index].type == TokenType.IMPLICIT_MULTIPLICATION)) {
+            val operator = tokens[index].type.id
+            index++
+            val rightNode = parseCoalescing()
+            leftNode = TreeNode(operator, leftNode, rightNode)
+        }
+
+        return leftNode
+    }
+
+    private fun parseCoalescing(): TreeNode {
+        var leftNode = parseFactor()
+
+        while (index < tokens.size && (tokens[index].type == TokenType.COALESCING)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseFactor()
@@ -244,6 +358,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
             return parseDictionary()
         } else if (tokens[index].type == TokenType.OPEN_BRACKET) {
             return parseList()
+        } else if (tokens[index].type == TokenType.UNDEFINED) {
+            return parseUndefined()
         } else if (tokens[index].type == TokenType.OPEN_PARENTHESIS) {
             index++
             val expressionNode = parseExpression()
@@ -262,13 +378,13 @@ class NodeParser(private val tokens: MutableList<Token>) {
                             TokenType.NUMBER,
                             -((nextToken.value as Number).toDouble())
                         ))
-                        return parseFactor()
+                        return parseOtherStuff(parseFactor())
                     } else if (nextToken.type == TokenType.IDENTIFIER || nextToken.type == TokenType.FUNCTION_CALL || nextToken.type == TokenType.OPEN_PARENTHESIS) {
                         tokens.add(index, Token(
                             TokenType.NUMBER,
                             0.0
                         ))
-                        return parseFactor()
+                        return parseOtherStuff(parseFactor())
                     }
                 }
             }
@@ -288,15 +404,19 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
                 TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
-                TokenType.EQUALS, TokenType.WHITESPACE
+                TokenType.EQUALS, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON
             )
             val valueTokenTypes = listOf(
                 TokenType.NUMBER, TokenType.STRING
             )
-            val newTokens: MutableList<Token> = mutableListOf()
-            for ((index, token) in tokens.withIndex()) {
-                if (token.type == TokenType.WHITESPACE) continue
 
+            val whiteSpaceFreeTokens = mutableListOf<Token>()
+            for (token in tokens) {
+                if (token.type != TokenType.WHITESPACE) whiteSpaceFreeTokens.add(token)
+            }
+
+            val newTokens: MutableList<Token> = mutableListOf()
+            for ((index, token) in whiteSpaceFreeTokens.withIndex()) {
                 if (token.type == TokenType.OPEN_PARENTHESIS) openParen++
                 if (token.type == TokenType.OPEN_BRACKET) openBracket++
                 if (token.type == TokenType.OPEN_CURLY) openCurly++
@@ -306,11 +426,11 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 if (token.type == TokenType.CLOSED_CURLY) openCurly--
 
                 val nextIndex = index + 1
-                if (tokens.size <= nextIndex) {
+                if (whiteSpaceFreeTokens.size <= nextIndex) {
                     newTokens.add(token)
                     break
                 }
-                val nextToken = tokens[nextIndex]
+                val nextToken = whiteSpaceFreeTokens[nextIndex]
                 newTokens.add(token)
                 val addMul =
                     (!operationTokenTypes.contains(token.type) && (nextToken.type == TokenType.OPEN_PARENTHESIS || nextToken.type == TokenType.IDENTIFIER || nextToken.type == TokenType.FUNCTION_CALL)) ||
@@ -326,9 +446,20 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 }
             }
 
-            for (i in 0..openParen) newTokens.add(Token(TokenType.CLOSED_PARENTHESIS, ")"))
-            for (i in 0..openBracket) newTokens.add(Token(TokenType.CLOSED_BRACKET, "]"))
-            for (i in 0..openCurly) newTokens.add(Token(TokenType.CLOSED_CURLY, "}"))
+            while (openParen > 0) {
+                newTokens.add(Token(TokenType.CLOSED_PARENTHESIS, ")"))
+                openParen--
+            }
+
+            while (openBracket > 0) {
+                newTokens.add(Token(TokenType.CLOSED_BRACKET, ")"))
+                openParen--
+            }
+
+            while (openCurly > 0) {
+                newTokens.add(Token(TokenType.CLOSED_CURLY, ")"))
+                openParen--
+            }
 
             return NodeParser(newTokens).parseExpression()
         }

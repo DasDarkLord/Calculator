@@ -1,9 +1,6 @@
 package calcFunctions.patternSet.argument;
 
-import calcFunctions.patternSet.argument.impl.AnyArgument;
-import calcFunctions.patternSet.argument.impl.NumberArgument;
-import calcFunctions.patternSet.argument.impl.StringArgument;
-import calcFunctions.patternSet.argument.impl.TreeNodeArgument;
+import calcFunctions.patternSet.argument.impl.*;
 import parser.TreeNode;
 
 import java.util.ArrayList;
@@ -15,6 +12,7 @@ public abstract class Argument<T> {
     static {
         add(new NumberArgument());
         add(new StringArgument());
+        add(new RegexArgument());
         add(new TreeNodeArgument());
         add(new AnyArgument());
     }

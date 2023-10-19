@@ -3,7 +3,6 @@ package lexer
 import calcConstants.constants
 import calcConstants.replacements
 import calcConstants.userConstants
-import calcFunctions.classFunctions
 import calcFunctions.functions
 import calcFunctions.userFunctions
 import utils.deepCopy
@@ -21,7 +20,11 @@ class Lexer(val source: String) {
                 source[position].isDigit() -> {
                     var num = ""
                     var amountPoint = 0
-                    while (position < source.length && (source[position].isDigit() || (source[position] == '.' && amountPoint == 0))) {
+                    while (position < source.length && (source[position].isDigit() || (source[position] == '.' && amountPoint == 0) || source[position] == '_')) {
+                        if (source[position] == '_') {
+                            position++
+                            continue
+                        }
                         if (source[position] == '.') amountPoint = 1
                         num += source[position]
                         position++
@@ -46,6 +49,7 @@ class Lexer(val source: String) {
                                 'n' -> str += "\n"
                                 '\\' -> str += "\\"
                                 't' -> str += "\t"
+                                'r' -> str += "\r"
                                 '"' -> str += "\""
                                 '\'' -> str += "'"
                             }
@@ -68,23 +72,38 @@ class Lexer(val source: String) {
                     ))
                 }
                 source[position].isLetter() || source[position] == '`' -> {
-                    val startWithThing = source[position] == '`'
-                    if (startWithThing) position++
+                    val startWithBacktick = source[position] == '`'
+                    if (startWithBacktick) position++
 
                     var str = ""
                     var amountDigit = 0
                     while (position < source.length) {
-                        if (startWithThing) {
+                        if (startWithBacktick) {
                             if (source[position] == '`') {
                                 position++
                                 break
                             }
                         }
-                        else if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_' || source[position] == '.')) break
+                        else if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_')) break
 
                         str += source[position]
-                        if (!startWithThing) if (source[position].isDigit()) amountDigit++
+                        if (!startWithBacktick) if (source[position].isDigit()) amountDigit++
                         position++
+                    }
+
+                    if (!startWithBacktick) {
+                        var found = false
+                        for (type in TokenType.entries) {
+                            if (type.word != null && type.word == str) {
+                                tokens.add(Token(
+                                    type,
+                                    type.word
+                                ))
+                                found = true
+                                break
+                            }
+                        }
+                        if (found) continue
                     }
 
                     val combFuncs = deepCopy(userFunctions)
@@ -108,33 +127,54 @@ class Lexer(val source: String) {
                     }
                     position--
 
-                    if (str.contains(".")) {
-                        val id = str.split(".")[0]
-                        val func = str.split(".")[1]
+                    tokens.add(Token(
+                        type,
+                        str
+                    ))
+                }
+                source[position] == '.' -> {
+                    position++
 
-                        funcExists = false
-                        for (function in classFunctions) for (name in function.key) if (name == func) funcExists = true
+                    val inBackticks = source[position] == '`'
 
-                        tokens.add(Token(
-                            type,
-                            id
-                        ))
-                        if (funcExists) {
-                            tokens.add(Token(
-                                TokenType.CLASS_FUNCTION_CALL,
-                                func
-                            ))
+                    var str = ""
+
+                    while (position < source.length) {
+                        if (inBackticks) {
+                            if (source[position] == '`') {
+                                position++
+                                break
+                            }
+                        } else {
+                            if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_')) break
                         }
-                    } else {
-                        tokens.add(Token(
-                            type,
-                            str
-                        ))
+
+                        str += source[position]
+
+                        position++
                     }
+                    position--
+
+                    tokens.add(Token(
+                        TokenType.CLASS_FUNCTION_CALL,
+                        str
+                    ))
                 }
                 else -> {
+                    if (source[position] == '?') {
+                        position++
+                        if (position < source.length && source[position] == ':') { // we love special cases for coalescing
+                            position++
+                            tokens.add(Token(
+                                TokenType.COALESCING,
+                                "?:"
+                            ))
+                            continue
+                        } else position--
+                    }
+
                     for (type in TokenType.entries) {
-                        if (type.symbol != null && source[position] == type.symbol) {
+                        if (source[position] == type.symbol) {
                             tokens.add(Token(
                                 type,
                                 type.symbol.toString()

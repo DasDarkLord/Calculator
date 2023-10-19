@@ -8,12 +8,12 @@ public class StringArgument extends Argument<String> {
 
     @Override
     public String accept(TreeNode tree) {
-        return (String) Evaluator.Companion.evaluateTree(tree);
+        return (String) Evaluator.Companion.evaluateTree(tree, null);
     }
 
     @Override
     public boolean accepts(TreeNode tree) {
-        return Evaluator.Companion.evaluateTree(tree) instanceof String;
+        return Evaluator.Companion.evaluateTree(tree, null) instanceof String;
     }
 
 }

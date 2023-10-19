@@ -1,5 +1,6 @@
 package parser
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -14,7 +15,7 @@ data class TreeNode(val type: String, val left: TreeNode? = null, val right: Tre
             if (value is Number) json.addProperty("value", value.toDouble())
             else if (value is String) json.addProperty("value", value)
             else if (value is TreeNode) json.add("value", value.jsonObject())
-            else json.addProperty("value", value.toString())
+            else gson().toJson(value)
         } else {
             json.add("left", left!!.jsonObject())
             json.add("right", right!!.jsonObject())
@@ -28,13 +29,38 @@ data class TreeNode(val type: String, val left: TreeNode? = null, val right: Tre
         return json
     }
 
+    private fun gson(): Gson = GsonBuilder()
+        .setPrettyPrinting()
+        .serializeNulls()
+        .disableHtmlEscaping()
+        .create()
+
     fun json(): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .serializeNulls()
-            .disableHtmlEscaping()
-            .create()
-            .toJson(jsonObject())
+        return gson().toJson(jsonObject())
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TreeNode
+
+        if (type != other.type) return false
+        if (left != other.left) return false
+        if (right != other.right) return false
+        if (value != other.value) return false
+        if (arguments != other.arguments) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + (left?.hashCode() ?: 0)
+        result = 31 * result + (right?.hashCode() ?: 0)
+        result = 31 * result + (value?.hashCode() ?: 0)
+        result = 31 * result + (arguments?.hashCode() ?: 0)
+        return result
     }
 
 }

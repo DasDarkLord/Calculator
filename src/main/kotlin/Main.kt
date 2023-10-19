@@ -1,10 +1,7 @@
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import evaluator.Evaluator
 import lexer.Lexer
 import lexer.Token
 import lexer.TokenType
-import org.intellij.lang.annotations.RegExp
 import parser.NodeParser
 import java.util.Scanner
 
@@ -15,23 +12,25 @@ fun main(args: Array<String>) {
         val user = scanner.nextLine()
         print("\u001b[2K\r")
 
-        // Lex Input
         val tokens = Lexer(user).lexTokens()
-
+//        for (token in tokens) {
+//            if (token.type == TokenType.WHITESPACE) continue
+//            println(token)
+//        }
         print(">> ")
-        printTokens(tokens) // print colored version of input
+        printColored(tokens)
 
-        // Parse to a Tree
+
         val tree = NodeParser.parseTokens(tokens)
 //        println(tree.json())
 
-        // Evaluate tree
+
         val result = Evaluator.evaluateTree(tree)
         println(prettierVersion(result))
     }
 }
 
-fun printTokens(tokens: List<Token>) {
+fun printColored(tokens: List<Token>) {
     val depths = listOf(
         "134", "104", "144"
     )
@@ -50,15 +49,10 @@ fun printTokens(tokens: List<Token>) {
             TokenType.NUMBER -> "\u001b[38;5;1m" + prettierVersion(token.value)
             TokenType.STRING -> "\u001b[38;5;87m\"" + fixEscapes(prettierVersion(token.value)) + "\""
             TokenType.IDENTIFIER -> "\u001b[38;5;221m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
-            TokenType.CLASS_FUNCTION_CALL -> "\u001B[38;5;231m.\u001b[38;5;141m" + prettierVersion(token.value)
-            TokenType.FUNCTION_CALL -> "\u001b[38;5;141m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
-            TokenType.IMPLICIT_MULTIPLICATION -> "\u001b[37m*"
-            TokenType.OPEN_CURLY -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
-            TokenType.CLOSED_CURLY ->  "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
-            TokenType.OPEN_BRACKET ->  "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
-            TokenType.CLOSED_BRACKET ->  "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
-            TokenType.OPEN_PARENTHESIS ->  "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
-            TokenType.CLOSED_PARENTHESIS -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
+            TokenType.CLASS_FUNCTION_CALL -> "\u001B[38;5;231m.\u001b[38;5;147m" + prettierVersion(token.value)
+            TokenType.FUNCTION_CALL -> "\u001b[38;5;147m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
+            TokenType.IMPLICIT_MULTIPLICATION, TokenType.UNDEFINED -> "\u001b[37m" + prettierVersion(token.value)
+            TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
             TokenType.WHITESPACE -> " "
             else -> "\u001b[38;5;231m" + prettierVersion(token.value)
         }
@@ -75,7 +69,8 @@ fun printTokens(tokens: List<Token>) {
 }
 
 fun fixEscapes(str: String): String {
-    return str.replace("\n", "\\n").replace("\t", "\\t")
+    return str.replace("\n", "\\n").replace("\t", "\\t").replace("\\\\", "\\\\\\\\")
+        .replace("\r", "\\r")
 }
 
 /**

@@ -5,11 +5,18 @@ import calcFunctions.argumentSet.ArgumentSet
 import calcFunctions.patternSet.PatternSet
 import calcFunctions.patternSet.argument.impl.AnyArgument
 import calcFunctions.patternSet.argument.impl.NumberArgument
+import calcFunctions.patternSet.argument.impl.StringArgument
 import calcFunctions.patternSet.argument.impl.TreeNodeArgument
 import calcFunctions.patternSet.element.impl.SingletonNode
 import calcFunctions.patternSet.element.impl.VarargsNode
+import evaluator.ClassFunctionEvaluationType
 import evaluator.Evaluator
+import evaluator.FunctionEvaluationType
+import evaluator.IdEvaluationType
+import lexer.Token
+import lexer.TokenType
 import parser.TreeNode
+import prettierVersion
 import utils.*
 import kotlin.math.*
 
@@ -44,7 +51,15 @@ val functions = mapOf(
     listOf("csech", "cosech", "cosecanth", "csecanth") to HyperbolicCoSecantFunction,
     listOf("len", "length") to LengthFunction,
     listOf("multifactorial") to MultiFactorialFunction,
-    listOf("round") to RoundFunction
+    listOf("round") to RoundFunction,
+    listOf("parseNumber", "parsenum", "parseNum", "parsenumber", "num", "number") to ParseNumberFunction,
+    listOf("str", "string") to AsStringFunction,
+    listOf("Regex", "RegEx", "regex", "regEx", "regularEx", "regularex", "regularExpression", "regularexpression") to RegexFunction,
+    listOf("rand", "random") to RandomFunction,
+    listOf("boundedRandom", "boundedRand", "boundedrandom", "boundedrand", "boundrand", "boundrandom", "boundRand", "boundRandom") to BoundedRandomFunction,
+    listOf("identifier", "id", "var", "variable") to IdentifierFunction,
+    listOf("invoke") to InvokeFunction,
+    listOf("invokeTo") to InvokeClassFunction
 )
 
 val userFunctions = HashMap<List<String>, CalcFunc>()
@@ -56,20 +71,20 @@ interface CalcFunc {
 
 // User Function
 
-class UserFunction(val expression: TreeNode, val arguments: List<String>) : CalcFunc {
+class UserFunction(private val expression: TreeNode, private val arguments: List<String>) : CalcFunc {
     override val patternSet: PatternSet
         get() = PatternSet()
             .addElement(VarargsNode("arguments", AnyArgument()))
 
     override fun execute(argumentSet: ArgumentSet): Any {
-        val map = mutableMapOf<String, Any>()
+        val functionConstants = mutableMapOf<List<String>, Any>()
 
         for ((index, arg) in argumentSet.getVarargValue<Any>("arguments").withIndex()) {
             val argName = arguments[index]
-            userConstants[listOf(argName)] = arg
+            functionConstants[listOf(argName)] = arg
         }
 
-        return Evaluator.evaluateTree(expression)
+        return Evaluator.evaluateTree(expression, functionConstants)
     }
 }
 
@@ -246,8 +261,7 @@ object SumFunction : CalcFunc {
 
         var sum = 0.0
         for (i in min..max) {
-            userConstants[listOf("x", "X")] = i
-            val evaluated = Evaluator.evaluateTree(expression)
+            val evaluated = Evaluator.evaluateTree(expression, mapOf(listOf("x", "X") to i))
             if (evaluated is Number) sum += evaluated.toDouble()
         }
 
@@ -436,6 +450,129 @@ object RoundFunction : CalcFunc {
         val value = argumentSet.getValue<Double>("value")
         val toRoundTo = argumentSet.getValue<Double>("roundTo")
         return (value / toRoundTo).roundToInt() * toRoundTo
+    }
+
+}
+
+object ParseNumberFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("value", AnyArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return argumentSet.getValue<Any>("value").toString().toDouble()
+    }
+
+}
+
+object AsStringFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("value", AnyArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return prettierVersion(argumentSet.getValue<Any>("value").toString())
+    }
+
+}
+
+object RegexFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("expression", StringArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return Regex(argumentSet.getValue("expression"))
+    }
+}
+
+object RandomFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return Math.random()
+    }
+
+}
+
+object BoundedRandomFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("min", NumberArgument()))
+            .addElement(SingletonNode("max", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val min = argumentSet.getValue<Double>("min")
+        val max = argumentSet.getValue<Double>("max")
+        return min + (Math.random() * (max - min))
+    }
+
+}
+
+object IdentifierFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("name", StringArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return IdEvaluationType.evaluate(TreeNode(
+            "id",
+            value = argumentSet.getValue<String>("name"))
+        )
+    }
+
+}
+
+object InvokeFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("name", StringArgument()))
+            .addElement(VarargsNode("arguments", TreeNodeArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val arguments = mutableListOf<TreeNode>()
+        for (argument in argumentSet.getVarargValue<TreeNode>("arguments")) {
+            arguments.add(argument)
+        }
+
+        val tree = TreeNode(
+            TokenType.FUNCTION_CALL.id,
+            value = argumentSet.getValue<String>("name"),
+            arguments = arguments
+        )
+
+        return FunctionEvaluationType.evaluate(tree)
+    }
+
+}
+
+object InvokeClassFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("affected", TreeNodeArgument()))
+            .addElement(SingletonNode("name", StringArgument()))
+            .addElement(VarargsNode("arguments", TreeNodeArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val arguments = mutableListOf<TreeNode>()
+        for (argument in argumentSet.getVarargValue<TreeNode>("arguments")) {
+            arguments.add(argument)
+        }
+
+        val functionTree = TreeNode(
+            TokenType.FUNCTION_CALL.id,
+            value = argumentSet.getValue<String>("name"),
+            arguments = arguments
+        )
+
+        val tree = TreeNode(
+            TokenType.CLASS_FUNCTION_CALL.id,
+            right = argumentSet.getValue("affected"),
+            left = functionTree
+        )
+
+        return ClassFunctionEvaluationType.evaluate(tree)
     }
 
 }
