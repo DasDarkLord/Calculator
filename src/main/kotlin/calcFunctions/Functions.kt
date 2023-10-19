@@ -59,7 +59,8 @@ val functions = mapOf(
     listOf("boundedRandom", "boundedRand", "boundedrandom", "boundedrand", "boundrand", "boundrandom", "boundRand", "boundRandom") to BoundedRandomFunction,
     listOf("identifier", "id", "var", "variable") to IdentifierFunction,
     listOf("invoke") to InvokeFunction,
-    listOf("invokeTo") to InvokeClassFunction
+    listOf("invokeTo") to InvokeClassFunction,
+    listOf("write") to WriteFunction
 )
 
 val userFunctions = HashMap<List<String>, CalcFunc>()
@@ -577,6 +578,21 @@ object InvokeClassFunction : CalcFunc {
         )
 
         return ClassFunctionEvaluationType.evaluate(tree)
+    }
+
+}
+
+object WriteFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(VarargsNode("m", AnyArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        for (m in argumentSet.getVarargValue<Any>("m")) {
+            print(m)
+        }
+
+        return 0
     }
 
 }

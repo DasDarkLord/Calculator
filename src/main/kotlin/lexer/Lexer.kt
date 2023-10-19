@@ -11,8 +11,17 @@ class Lexer(val source: String) {
 
     fun lexTokens(): MutableList<Token> {
         val tokens = mutableListOf<Token>()
-        var source = source.trim()
-        for (replacement in replacements) source = source.replace(replacement.key, replacement.value)
+        var src = source.trim()
+
+        var result = src
+        for ((pattern, replacement) in replacements) {
+            result = pattern.replace(result) { matchResult ->
+                val replacementText = replacement.replace("$1", matchResult.groupValues[1])
+                replacementText
+            }
+        }
+
+        val source = result
 
         var position = 0
         while (position < source.length) {
