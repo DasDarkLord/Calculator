@@ -2,6 +2,7 @@ package evaluator
 
 import calcConstants.constants
 import calcConstants.userConstants
+import calcFunctions.UserFunction
 import calcFunctions.argumentSet.PatternSetReader
 import calcFunctions.classFunctions
 import calcFunctions.functions
@@ -191,6 +192,10 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
             }
         }
 
+        if (left.type == "func_call") {
+            if (functions.containsKey(left.value!!)) type = "checkEquals"
+        }
+
         if (type == "assignLeft") {
             val value = Evaluator.evaluateTree(right)
 
@@ -212,6 +217,20 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
             }
 
             val id = left.value!!
+
+            if (left.type == "func_call") {
+                val argNames = mutableListOf<String>()
+                for (argument in left.arguments!!) {
+                    if (argument.type == "id") argNames.add(argument.value!! as String)
+                    if (argument.type == "string") argNames.add(argument.value!! as String)
+                }
+
+                userFunctions[listOf(id as String)] = UserFunction(right, argNames)
+
+                return mapOf(
+                    id to userFunctions[listOf(id)]
+                )
+            }
 
             userConstants[listOf(id as String)] = value
             return mapOf(

@@ -51,7 +51,7 @@ fun printTokens(tokens: List<Token>) {
             TokenType.STRING -> "\u001b[38;5;87m\"" + fixEscapes(prettierVersion(token.value)) + "\""
             TokenType.IDENTIFIER -> "\u001b[38;5;221m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
             TokenType.CLASS_FUNCTION_CALL -> "\u001b[38;5;141m" + prettierVersion(token.value)
-            TokenType.FUNCTION_CALL -> "\u001b[38;5;141m" + prettierVersion(token.value)
+            TokenType.FUNCTION_CALL -> "\u001b[38;5;141m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
             TokenType.IMPLICIT_MULTIPLICATION -> "\u001b[37m*"
             TokenType.OPEN_CURLY -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
             TokenType.CLOSED_CURLY ->  "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)

@@ -93,8 +93,14 @@ class Lexer(val source: String) {
                     var funcExists = false
                     for (function in combFuncs) for (name in function.key) if (name == str) funcExists = true
 
+                    val combConsts = deepCopy(userConstants)
+                    for (constant in constants) combConsts[constant.key] = constant.value
+
+                    var constantExists = false
+                    for (constant in combConsts) for (name in constant.key) if (name == str) constantExists = true
+
                     var type = TokenType.IDENTIFIER
-                    if (position < source.length && source[position] == '(' && funcExists) {
+                    if (position < source.length && source[position] == '(' && (funcExists || !constantExists)) {
                         type = TokenType.FUNCTION_CALL
                     } else {
                         position -= amountDigit

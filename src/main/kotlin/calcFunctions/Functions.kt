@@ -7,6 +7,7 @@ import calcFunctions.patternSet.argument.impl.AnyArgument
 import calcFunctions.patternSet.argument.impl.NumberArgument
 import calcFunctions.patternSet.argument.impl.TreeNodeArgument
 import calcFunctions.patternSet.element.impl.SingletonNode
+import calcFunctions.patternSet.element.impl.VarargsNode
 import evaluator.Evaluator
 import parser.TreeNode
 import utils.*
@@ -51,6 +52,25 @@ val userFunctions = HashMap<List<String>, CalcFunc>()
 interface CalcFunc {
     val patternSet: PatternSet
     fun execute(argumentSet: ArgumentSet): Any
+}
+
+// User Function
+
+class UserFunction(val expression: TreeNode, val arguments: List<String>) : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(VarargsNode("arguments", AnyArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val map = mutableMapOf<String, Any>()
+
+        for ((index, arg) in argumentSet.getVarargValue<Any>("arguments").withIndex()) {
+            val argName = arguments[index]
+            userConstants[listOf(argName)] = arg
+        }
+
+        return Evaluator.evaluateTree(expression)
+    }
 }
 
 // Default Functions

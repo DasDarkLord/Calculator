@@ -1,6 +1,7 @@
 package calcFunctions.patternSet.element.impl;
 
 import calcFunctions.patternSet.argument.Argument;
+import calcFunctions.patternSet.argument.impl.TreeNodeArgument;
 import calcFunctions.patternSet.element.ElementResult;
 import calcFunctions.patternSet.element.PatternElement;
 import calcFunctions.patternSet.exception.InvalidArgumentException;
@@ -23,12 +24,12 @@ public class VarargsNode implements PatternElement {
         return false;
     }
 
-    private Argument<?> sameArg(Argument<?> arg) {
+    private Argument<?> sameArg(TreeNode tree) {
         for (Argument<?> a : allowedTypes) {
-            if (a.getClass().equals(arg.getClass())) return a;
+            if (a.accepts(tree)) return a;
         }
 
-        return null;
+        return new TreeNodeArgument();
     }
 
     public VarargsNode(String name, Argument<?>... allowed) {
@@ -53,7 +54,7 @@ public class VarargsNode implements PatternElement {
         List<Object> vs = new ArrayList<>();
         for (TreeNode node : list) {
             if (!allows(node)) break;
-            Argument<?> argument = sameArg(Argument.argOf(node));
+            Argument<?> argument = sameArg(node);
             vs.add(argument.accept(node));
         }
 
