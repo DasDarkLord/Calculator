@@ -288,7 +288,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
                 TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
-                TokenType.EQUALS
+                TokenType.EQUALS, TokenType.WHITESPACE
             )
             val valueTokenTypes = listOf(
                 TokenType.NUMBER, TokenType.STRING
