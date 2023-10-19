@@ -75,7 +75,10 @@ class Lexer(val source: String) {
                     var amountDigit = 0
                     while (position < source.length) {
                         if (startWithThing) {
-                            if (source[position] == '`') break
+                            if (source[position] == '`') {
+                                position++
+                                break
+                            }
                         }
                         else if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_' || source[position] == '.')) break
 
