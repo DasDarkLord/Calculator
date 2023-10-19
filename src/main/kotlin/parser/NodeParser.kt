@@ -77,31 +77,15 @@ class NodeParser(private val tokens: MutableList<Token>) {
             if (tokens[index].type == TokenType.OPEN_BRACKET) {
                 index++
 
-                val tok = mutableListOf<Token>()
-                var openParens = 0
-                while (index < tokens.size) {
-                    if (tokens[index].type == TokenType.OPEN_PARENTHESIS) openParens++
-                    if (tokens[index].type == TokenType.OPEN_BRACKET) openParens++
-                    if (tokens[index].type == TokenType.OPEN_CURLY) openParens++
-                    if (tokens[index].type == TokenType.CLOSED_PARENTHESIS) openParens--
-                    if (tokens[index].type == TokenType.CLOSED_BRACKET) openParens--
-                    if (tokens[index].type == TokenType.CLOSED_CURLY) openParens--
-
-                    if (openParens == 0) {
-                        index++
-                        break
-                    }
-                    tok.add(tokens[index])
-
+                val expr = parseExpression()
+                if (index < tokens.size && tokens[index].type == TokenType.CLOSED_BRACKET) {
                     index++
+                    return TreeNode(
+                        "index",
+                        left = node,
+                        right = expr
+                    )
                 }
-
-                index++
-                return TreeNode(
-                    "index",
-                    left = node,
-                    right = parseTokens(tok)
-                )
             }
         }
 
@@ -222,6 +206,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
 
             index++
         }
+        index++
+
         if (currentKeyTokens.isNotEmpty()) listKeyTokens.add(currentKeyTokens)
         if (currentValueTokens.isNotEmpty()) listValueTokens.add(currentValueTokens)
 
@@ -230,7 +216,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
             map[Evaluator.evaluateTree(parseTokens(t))] = Evaluator.evaluateTree(parseTokens(listValueTokens[index]))
         }
 
-        return TreeNode("dict", value = map)
+        return parseOtherStuff(TreeNode("dict", value = map))
     }
 
     private fun parseList(): TreeNode {
