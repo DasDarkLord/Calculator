@@ -97,7 +97,7 @@ class Lexer(val source: String) {
                     for (constant in constants) combConsts[constant.key] = constant.value
 
                     var constantExists = false
-                    for (constant in combConsts) for (name in constant.key) if (name == str) constantExists = true
+                    for (constant in combConsts) for (name in constant.key) if (name == str.split(".")[0]) constantExists = true
 
                     var type = TokenType.IDENTIFIER
                     if (position < source.length && source[position] == '(' && (funcExists || !constantExists)) {
