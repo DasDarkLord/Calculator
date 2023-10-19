@@ -13,6 +13,7 @@ fun main(args: Array<String>) {
     while (true) {
         print("> ")
         val user = scanner.nextLine()
+        print("\u001b[2K\r")
 
         // Lex Input
         val tokens = Lexer(user).lexTokens()
