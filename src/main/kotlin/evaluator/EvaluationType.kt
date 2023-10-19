@@ -1,12 +1,10 @@
 package evaluator
 
+import calcConstants.constantExists
 import calcConstants.constants
 import calcConstants.userConstants
-import calcFunctions.UserFunction
+import calcFunctions.*
 import calcFunctions.argumentSet.PatternSetReader
-import calcFunctions.classFunctions
-import calcFunctions.functions
-import calcFunctions.userFunctions
 import parser.TreeNode
 import prettierVersion
 import utils.multifactorial
@@ -194,16 +192,18 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
     override fun evaluate(left: TreeNode, right: TreeNode): Any {
         var type = "assignLeft"
         if (left.type == "id") {
-            if (constants.containsKey(left.value!!)) type = "checkEquals"
+            if (constantExists(left.value!! as String)) type = "checkEquals"
         } else {
             if (left.type == "index" && left.left!!.type == "id") {
-                if (constants.containsKey(left.left.value!!)) type = "checkEquals"
+                if (constantExists(left.left.value!! as String)) type = "checkEquals"
             }
         }
 
         if (left.type == "func_call") {
-            if (functions.containsKey(left.value!!)) type = "checkEquals"
+            if (functionExists(left.value!! as String)) type = "checkEquals"
         }
+
+        if (type == "assignLeft" && !(left.type == "id" || left.type == "index" || left.type == "func_call")) type = "checkEquals"
 
         if (type == "assignLeft") {
             val value = Evaluator.evaluateTree(right)
@@ -247,7 +247,7 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
             )
         }
 
-        return (Evaluator.evaluateTree(left) == Evaluator.evaluateTree(right)).toString()
+        return (Evaluator.evaluateTree(left) == Evaluator.evaluateTree(right))
     }
 
     override val forType: String

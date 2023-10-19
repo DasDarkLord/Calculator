@@ -1,9 +1,9 @@
 package calcFunctions
 
-import calcConstants.userConstants
 import calcFunctions.argumentSet.ArgumentSet
 import calcFunctions.patternSet.PatternSet
 import calcFunctions.patternSet.argument.impl.AnyArgument
+import calcFunctions.patternSet.argument.impl.BooleanArgument
 import calcFunctions.patternSet.argument.impl.NumberArgument
 import calcFunctions.patternSet.argument.impl.StringArgument
 import calcFunctions.patternSet.argument.impl.TreeNodeArgument
@@ -13,7 +13,6 @@ import evaluator.ClassFunctionEvaluationType
 import evaluator.Evaluator
 import evaluator.FunctionEvaluationType
 import evaluator.IdEvaluationType
-import lexer.Token
 import lexer.TokenType
 import parser.TreeNode
 import prettierVersion
@@ -54,14 +53,24 @@ val functions = mapOf(
     listOf("round") to RoundFunction,
     listOf("parseNumber", "parsenum", "parseNum", "parsenumber", "num", "number") to ParseNumberFunction,
     listOf("str", "string") to AsStringFunction,
+    listOf("bool", "boolean") to BooleanFunction,
     listOf("Regex", "RegEx", "regex", "regEx", "regularEx", "regularex", "regularExpression", "regularexpression") to RegexFunction,
     listOf("rand", "random") to RandomFunction,
     listOf("boundedRandom", "boundedRand", "boundedrandom", "boundedrand", "boundrand", "boundrandom", "boundRand", "boundRandom") to BoundedRandomFunction,
     listOf("identifier", "id", "var", "variable") to IdentifierFunction,
     listOf("invoke") to InvokeFunction,
     listOf("invokeTo") to InvokeClassFunction,
-    listOf("write") to WriteFunction
+    listOf("write") to WriteFunction,
+    listOf("if") to IfFunction
 )
+
+fun functionExists(name: String): Boolean {
+    for (func in functions) {
+        for (funcName in func.key) if (funcName == name) return true
+    }
+
+    return false
+}
 
 val userFunctions = HashMap<List<String>, CalcFunc>()
 
@@ -593,6 +602,35 @@ object WriteFunction : CalcFunc {
         }
 
         return 0
+    }
+
+}
+
+object BooleanFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("value", StringArgument(), NumberArgument(), BooleanArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val value = argumentSet.getValue<Any>("value")
+        if (value is Boolean) return value
+        if (value is Number) return value.toInt() > 0
+        if (value is String) return value == "true"
+        return false
+    }
+
+}
+
+object IfFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("boolean", BooleanArgument()))
+            .addElement(SingletonNode("expression1", TreeNodeArgument()))
+            .addElement(SingletonNode("expression2", TreeNodeArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        if (argumentSet.getValue("boolean")) return Evaluator.evaluateTree(argumentSet.getValue("expression1"))
+        else return Evaluator.evaluateTree(argumentSet.getValue("expression2"))
     }
 
 }

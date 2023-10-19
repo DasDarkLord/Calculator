@@ -12,6 +12,7 @@ public abstract class Argument<T> {
     static {
         add(new NumberArgument());
         add(new StringArgument());
+        add(new BooleanArgument());
         add(new RegexArgument());
         add(new TreeNodeArgument());
         add(new AnyArgument());

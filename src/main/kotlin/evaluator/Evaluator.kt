@@ -18,9 +18,9 @@ class Evaluator {
         }
 
         fun evaluateTree(tree: TreeNode, constants: Map<List<String>, Any>? = null): Any {
-            val uConsts = userConstants
+            val uConsts = calcConstants.constants
             if (constants != null) {
-                userConstants.putAll(constants)
+                calcConstants.constants.putAll(constants)
             }
 
             for (type in types) {
@@ -29,16 +29,16 @@ class Evaluator {
                         return type.evaluate(tree)
                     } finally {
                         if (constants != null) {
-                            userConstants.clear()
-                            userConstants.putAll(uConsts)
+                            calcConstants.constants.clear()
+                            calcConstants.constants.putAll(uConsts)
                         }
                     }
                 }
             }
 
             if (constants != null) {
-                userConstants.clear()
-                userConstants.putAll(uConsts)
+                calcConstants.constants.clear()
+                calcConstants.constants.putAll(uConsts)
             }
 
             throw IllegalStateException("Unknown tree type ${tree.type}")

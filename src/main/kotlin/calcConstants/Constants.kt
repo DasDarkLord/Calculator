@@ -1,6 +1,6 @@
 package calcConstants
 
-val constants = mapOf(
+val constants = mutableMapOf(
     listOf("pi") to 3.14159,
     listOf("e", "euler") to 2.71828,
     listOf("infinity", "inf", "positive_infinity") to Double.POSITIVE_INFINITY,
@@ -18,5 +18,13 @@ val constants = mapOf(
         "reset" to "\u001b[0m"
     )
 )
+
+fun constantExists(name: String): Boolean {
+    for (const in constants) {
+        for (constName in const.key) if (constName == name) return true
+    }
+
+    return false
+}
 
 val userConstants = HashMap<List<String>, Any>()

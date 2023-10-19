@@ -1,11 +1,9 @@
 package parser
 
-import calcConstants.constants
 import evaluator.Evaluator
 import lexer.Token
 import lexer.TokenType
 import utils.deepCopy
-import kotlin.math.exp
 
 class NodeParser(private val tokens: MutableList<Token>) {
     private var index = 0
@@ -364,7 +362,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
             val expressionNode = parseExpression()
             if (index < tokens.size && tokens[index].type == TokenType.CLOSED_PARENTHESIS) {
                 index++
-                return parseFactorial(parseIndex(expressionNode))
+                return parseOtherStuff(expressionNode)
             } else throw IllegalArgumentException("Expected closing parenthesis")
         } else {
             if (tokens[index].type == TokenType.SUBTRACTION) {
@@ -377,12 +375,15 @@ class NodeParser(private val tokens: MutableList<Token>) {
                             TokenType.NUMBER,
                             -((nextToken.value as Number).toDouble())
                         ))
-                        return parseOtherStuff(parseFactor())
+
+                        index++
+                        return parseOtherStuff(TreeNode("number", value = -((nextToken.value as Number).toDouble())))
                     } else if (nextToken.type == TokenType.IDENTIFIER || nextToken.type == TokenType.FUNCTION_CALL || nextToken.type == TokenType.OPEN_PARENTHESIS) {
                         tokens.add(index, Token(
                             TokenType.NUMBER,
                             0.0
                         ))
+
                         return parseOtherStuff(parseFactor())
                     }
                 }
@@ -400,7 +401,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
             var openCurly = 0
 
             val operationTokenTypes = listOf(
-                TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION,
+                TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION, TokenType.FACTORIAL,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
                 TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
                 TokenType.EQUALS, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON

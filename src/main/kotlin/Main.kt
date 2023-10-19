@@ -20,10 +20,8 @@ fun main(args: Array<String>) {
         print(">> ")
         printColored(tokens)
 
-
         val tree = NodeParser.parseTokens(tokens)
 //        println(tree.json())
-
 
         val result = Evaluator.evaluateTree(tree)
         println(prettierVersion(result))
