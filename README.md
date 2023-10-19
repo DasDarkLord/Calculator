@@ -8,3 +8,25 @@ u can also `sqrt(85)` or stuff <br>
 
 all functions:
 - i dont want to lsit them
+<br><br><br><br><br><br><br>
+if u do thing like `(("nuh "("uh "3)-" $")+"\n")20` it print
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
+nuh uh uh uh<br>
