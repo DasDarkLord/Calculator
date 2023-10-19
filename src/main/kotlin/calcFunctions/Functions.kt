@@ -573,8 +573,8 @@ object InvokeClassFunction : CalcFunc {
 
         val tree = TreeNode(
             TokenType.CLASS_FUNCTION_CALL.id,
-            right = argumentSet.getValue("affected"),
-            left = functionTree
+            left = argumentSet.getValue("affected"),
+            right = functionTree
         )
 
         return ClassFunctionEvaluationType.evaluate(tree)
