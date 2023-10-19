@@ -25,6 +25,7 @@ val functions = mapOf(
     listOf("acosh", "acosineh", "arccosineh", "arccosh") to AcoshFunction,
     listOf("tan", "tangent") to TanFunction,
     listOf("atan", "arctan", "atangent", "arctangent") to AtanFunction,
+    listOf("atan2") to Atan2Function,
     listOf("tanh", "tangenth") to TanhFunction,
     listOf("atanh", "atangenth", "arctangenth", "arctanh") to AtanhFunction,
     listOf("sign", "signum") to SignFunction,
@@ -387,6 +388,18 @@ object MultiFactorialFunction : CalcFunc {
 
     override fun execute(argumentSet: ArgumentSet): Any {
         return multifactorial(argumentSet.getValue("number"), argumentSet.getValue("factorial"))
+    }
+
+}
+
+object Atan2Function : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("y", NumberArgument()))
+            .addElement(SingletonNode("x", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return atan2(argumentSet.getValue("y"), argumentSet.getValue("x"))
     }
 
 }
