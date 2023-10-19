@@ -7,7 +7,7 @@ class Evaluator {
         private val types = ArrayList(listOf(
             NumberEvaluationType, StringEvaluationType, DictionaryEvaluationType, ListEvaluationType,
             AddEvaluationType, SubEvaluationType, MulEvaluationType, DivEvaluationType, PowEvaluationType, ModulusEvaluationType,
-            IdEvaluationType, FunctionEvaluationType,
+            IdEvaluationType, FunctionEvaluationType, ClassFunctionEvaluationType,
             EqualsEvaluationType, IndexEvaluationType, FactorialEvaluationType
         ))
 

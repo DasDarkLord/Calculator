@@ -3,6 +3,7 @@ package evaluator
 import calcConstants.constants
 import calcConstants.userConstants
 import calcFunctions.argumentSet.PatternSetReader
+import calcFunctions.classFunctions
 import calcFunctions.functions
 import calcFunctions.userFunctions
 import parser.TreeNode
@@ -117,6 +118,47 @@ object FunctionEvaluationType : EvaluationType {
         }
 
         return 0.0
+    }
+}
+
+object ClassFunctionEvaluationType : EvaluationType {
+    override val forType: String
+        get() = "func_call0"
+    override val aliases: List<String>
+        get() = emptyList()
+
+    override fun evaluate(tree: TreeNode): Any {
+        val affected = IdEvaluationType.evaluate(tree.left!!)
+
+        val functionTree = tree.right!!
+
+        val objs = mutableListOf<TreeNode>()
+        for (node in functionTree.arguments!!) objs.add(node)
+        val value = functionTree.value
+
+        val strValue = value.toString()
+        for (constantEntry in classFunctions) {
+            for (name in constantEntry.key) {
+                if (strValue == name) {
+                    for (func in constantEntry.value) {
+                        try {
+                            if (!func.forClass.isInstance(affected)) continue
+
+                            val reader = PatternSetReader(func.patternSet)
+                            reader.readObjects(objs)
+
+                            func.execute(affected, reader.set)
+
+                            return affected
+                        } catch (ignored: Exception) {
+                            ignored.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+
+        error("Failed to execute method")
     }
 }
 

@@ -33,7 +33,7 @@ val functions = mapOf(
     listOf("log", "logarithm") to LogFunction,
     listOf("log2", "logarithm2") to Log2Function,
     listOf("log10", "logarithm10") to Log10Function,
-    listOf("ln", "logn", "logarithmn") to LogNFunction,
+    listOf("ln", "logn", "logarithmn", "login") to LogNFunction,
     listOf("sec", "secant") to SecantFunction,
     listOf("sech", "secanth") to HyperbolicSecantFunction,
     listOf("csec", "cosec", "cosecant", "csecant") to CosecantFunction,
@@ -212,9 +212,13 @@ object SumFunction : CalcFunc {
             .addElement(SingletonNode("max", NumberArgument()))
 
     override fun execute(argumentSet: ArgumentSet): Any {
-        val min = argumentSet.getValue<Number>("min").toInt()
-        val max = argumentSet.getValue<Number>("max").toInt()
-        if (min > max) error("min can't be bigger than max")
+        var min = argumentSet.getValue<Number>("min").toInt()
+        var max = argumentSet.getValue<Number>("max").toInt()
+        if (min > max) {
+            val temp = min
+            min = max
+            max = temp
+        }
 
         val expression = argumentSet.getValue<TreeNode>("expression")
 

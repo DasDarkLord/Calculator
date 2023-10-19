@@ -101,6 +101,18 @@ class NodeParser(private val tokens: MutableList<Token>) {
         return node
     }
 
+    private fun parseClassFunction(node: TreeNode): TreeNode {
+        if (index > tokens.size) return node
+        val token = tokens[index]
+        if (token.type != TokenType.CLASS_FUNCTION_CALL) return node
+
+        return TreeNode(
+            token.type.id,
+            left = node,
+            right = parseFunction()
+        )
+    }
+
     private fun parseNumber(): TreeNode {
         val token = tokens[index]
         index++
@@ -116,7 +128,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
     private fun parseIdentifier(): TreeNode {
         val token = tokens[index]
         index++
-        return parseFactorial(parseIndex(TreeNode("id", value = token.value)))
+        return parseFactorial(parseIndex(parseClassFunction(TreeNode("id", value = token.value))))
     }
 
     private fun parseDictionary(): TreeNode {
@@ -275,7 +287,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
             val operationTokenTypes = listOf(
                 TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
-                TokenType.FUNCTION_CALL, TokenType.COMMA,
+                TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
                 TokenType.EQUALS
             )
             val valueTokenTypes = listOf(
@@ -283,6 +295,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
             )
             val newTokens: MutableList<Token> = mutableListOf()
             for ((index, token) in tokens.withIndex()) {
+                if (token.type == TokenType.WHITESPACE) continue
+
                 if (token.type == TokenType.OPEN_PARENTHESIS) openParen++
                 if (token.type == TokenType.OPEN_BRACKET) openBracket++
                 if (token.type == TokenType.OPEN_CURLY) openCurly++

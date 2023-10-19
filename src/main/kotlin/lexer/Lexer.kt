@@ -3,6 +3,7 @@ package lexer
 import calcConstants.constants
 import calcConstants.replacements
 import calcConstants.userConstants
+import calcFunctions.classFunctions
 import calcFunctions.functions
 import calcFunctions.userFunctions
 import utils.deepCopy
@@ -32,22 +33,24 @@ class Lexer(val source: String) {
                         if (num.toDoubleOrNull() == null) 0 else num.toDouble()
                     ))
                 }
-                source[position] == '"' -> {
-                    val start = position
+                source[position] == '"' || source[position] == '\'' -> {
+                    val startChar = source[position]
                     position++
 
                     var str = ""
                     var prev = '\u0000'
                     while (position < source.length) {
-                        if (source[position] == '"' && prev != '\\') break
+                        if (source[position] == startChar && prev != '\\') break
                         if (prev == '\\') {
                             when (source[position]) {
                                 'n' -> str += "\n"
                                 '\\' -> str += "\\"
                                 't' -> str += "\t"
                                 '"' -> str += "\""
+                                '\'' -> str += "'"
                             }
                             position++
+                            prev = '\u0000'
                             continue
                         }
                         prev = source[position]
@@ -69,7 +72,7 @@ class Lexer(val source: String) {
 
                     var str = ""
                     var amountDigit = 0
-                    while (position < source.length && (source[position].isLetter() || source[position].isDigit() || source[position] == '_')) {
+                    while (position < source.length && (source[position].isLetter() || source[position].isDigit() || source[position] == '_' || source[position] == '.')) {
                         str += source[position]
                         if (source[position].isDigit()) amountDigit++
                         position++
@@ -90,20 +93,29 @@ class Lexer(val source: String) {
                     }
                     position--
 
-//                    if (type != TokenType.FUNCTION_CALL) {
-//                        val combConsts = deepCopy(userConstants)
-//                        for (constant in constants) combConsts[constant.key] = constant.value
-//
-//                        var constExists = false
-//                        for (constant in combConsts) for (name in constant.key) if (name == str) constExists = true
-//
-//                        if (!constExists) type = TokenType.STRING
-//                    }
+                    if (str.contains(".")) {
+                        val id = str.split(".")[0]
+                        val func = str.split(".")[1]
 
-                    tokens.add(Token(
-                        type,
-                        str
-                    ))
+                        funcExists = false
+                        for (function in classFunctions) for (name in function.key) if (name == func) funcExists = true
+
+                        tokens.add(Token(
+                            type,
+                            id
+                        ))
+                        if (funcExists) {
+                            tokens.add(Token(
+                                TokenType.CLASS_FUNCTION_CALL,
+                                func
+                            ))
+                        }
+                    } else {
+                        tokens.add(Token(
+                            type,
+                            str
+                        ))
+                    }
                 }
                 else -> {
                     for (type in TokenType.entries) {

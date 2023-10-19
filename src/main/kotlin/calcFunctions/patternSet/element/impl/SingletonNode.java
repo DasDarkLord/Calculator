@@ -46,7 +46,7 @@ public class SingletonNode implements PatternElement {
         if (list.isEmpty()) {
             if (optional) {
                 return new ElementResult().addToArgumentMap(nodeName, defaultValue);
-            }
+            } else throw new InvalidArgumentException("Empty list");
         }
         TreeNode node = list.get(0);
 
