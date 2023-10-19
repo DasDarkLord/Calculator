@@ -42,7 +42,8 @@ val functions = mapOf(
     listOf("cotanh", "canh", "cotangenth", "ctangenth") to HyperbolicCotangentFunction,
     listOf("csech", "cosech", "cosecanth", "csecanth") to HyperbolicCoSecantFunction,
     listOf("len", "length") to LengthFunction,
-    listOf("multifactorial") to MultiFactorialFunction
+    listOf("multifactorial") to MultiFactorialFunction,
+    listOf("round") to RoundFunction
 )
 
 val userFunctions = HashMap<List<String>, CalcFunc>()
@@ -400,6 +401,21 @@ object Atan2Function : CalcFunc {
 
     override fun execute(argumentSet: ArgumentSet): Any {
         return atan2(argumentSet.getValue("y"), argumentSet.getValue("x"))
+    }
+
+}
+
+object RoundFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("value", NumberArgument()))
+            .addElement(SingletonNode("roundTo", NumberArgument())
+                            .setOptional(1.0))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val value = argumentSet.getValue<Double>("value")
+        val toRoundTo = argumentSet.getValue<Double>("roundTo")
+        return (value / toRoundTo).roundToInt() * toRoundTo
     }
 
 }
