@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 
         // Parse to a Tree
         val tree = NodeParser.parseTokens(tokens)
-        println(tree.json())
+//        println(tree.json())
 
         // Evaluate tree
         val result = Evaluator.evaluateTree(tree)
