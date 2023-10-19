@@ -66,7 +66,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
         while (isNodeChanged) {
             val newNode = parseFactorial(parseIndex(parseClassFunction(currentNode)))
             isNodeChanged = currentNode != newNode
-            currentNode = newNode
+            currentNode = newNode.copy()
         }
 
         return currentNode
@@ -77,17 +77,31 @@ class NodeParser(private val tokens: MutableList<Token>) {
             if (tokens[index].type == TokenType.OPEN_BRACKET) {
                 index++
 
-                val expr = parseExpression()
-                if (tokens[index].type == TokenType.CLOSED_BRACKET) {
+                val tok = mutableListOf<Token>()
+                var openParens = 0
+                while (index < tokens.size) {
+                    if (tokens[index].type == TokenType.OPEN_PARENTHESIS) openParens++
+                    if (tokens[index].type == TokenType.OPEN_BRACKET) openParens++
+                    if (tokens[index].type == TokenType.OPEN_CURLY) openParens++
+                    if (tokens[index].type == TokenType.CLOSED_PARENTHESIS) openParens--
+                    if (tokens[index].type == TokenType.CLOSED_BRACKET) openParens--
+                    if (tokens[index].type == TokenType.CLOSED_CURLY) openParens--
+
+                    if (openParens == 0) {
+                        index++
+                        break
+                    }
+                    tok.add(tokens[index])
+
                     index++
-                    return parseIndex(
-                        TreeNode(
-                            "index",
-                            left = node,
-                            right = expr
-                        )
-                    )
                 }
+
+                index++
+                return TreeNode(
+                    "index",
+                    left = node,
+                    right = parseTokens(tok)
+                )
             }
         }
 
@@ -102,9 +116,9 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 index++
             }
 
-            if (factorial == 0) return node
+            return if (factorial == 0) node
             else {
-                return TreeNode(
+                TreeNode(
                     "factorial",
                     left = node,
                     right = TreeNode(
@@ -119,15 +133,18 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseClassFunction(node: TreeNode): TreeNode {
-        if (index >= tokens.size) return node
-        val token = tokens[index]
-        if (token.type != TokenType.CLASS_FUNCTION_CALL) return node
+        if (index < tokens.size) {
+            val token = tokens[index]
+            if (token.type != TokenType.CLASS_FUNCTION_CALL) return node
 
-        return TreeNode(
-            token.type.id,
-            left = node,
-            right = parseFunction()
-        )
+            return TreeNode(
+                token.type.id,
+                left = node,
+                right = parseFunction()
+            )
+        }
+
+        return node
     }
 
     private fun parseUndefined(): TreeNode {
@@ -208,8 +225,6 @@ class NodeParser(private val tokens: MutableList<Token>) {
         if (currentKeyTokens.isNotEmpty()) listKeyTokens.add(currentKeyTokens)
         if (currentValueTokens.isNotEmpty()) listValueTokens.add(currentValueTokens)
 
-        index++
-
         for ((index, t) in listKeyTokens.withIndex()) {
             if (index >= listValueTokens.size) break
             map[Evaluator.evaluateTree(parseTokens(t))] = Evaluator.evaluateTree(parseTokens(listValueTokens[index]))
@@ -257,8 +272,6 @@ class NodeParser(private val tokens: MutableList<Token>) {
             index++
         }
         if (currentTokens.isNotEmpty()) listTokens.add(currentTokens)
-
-        index++
 
         for (t in listTokens) {
             list.add(Evaluator.evaluateTree(parseTokens(t)))

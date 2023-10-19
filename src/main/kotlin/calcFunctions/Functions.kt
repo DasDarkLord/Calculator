@@ -86,6 +86,10 @@ class UserFunction(private val expression: TreeNode, private val arguments: List
 
         return Evaluator.evaluateTree(expression, functionConstants)
     }
+
+    override fun toString(): String {
+        return "user defined function"
+    }
 }
 
 // Default Functions

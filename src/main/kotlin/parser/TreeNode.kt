@@ -15,7 +15,7 @@ data class TreeNode(val type: String, val left: TreeNode? = null, val right: Tre
             if (value is Number) json.addProperty("value", value.toDouble())
             else if (value is String) json.addProperty("value", value)
             else if (value is TreeNode) json.add("value", value.jsonObject())
-            else gson().toJson(value)
+            else json.addProperty("value", value.toString())
         } else {
             json.add("left", left!!.jsonObject())
             json.add("right", right!!.jsonObject())
