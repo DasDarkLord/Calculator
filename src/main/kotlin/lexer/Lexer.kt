@@ -67,14 +67,20 @@ class Lexer(val source: String) {
                         str,
                     ))
                 }
-                source[position].isLetter() -> {
-                    val start = position
+                source[position].isLetter() || source[position] == '`' -> {
+                    val startWithThing = source[position] == '`'
+                    if (startWithThing) position++
 
                     var str = ""
                     var amountDigit = 0
-                    while (position < source.length && (source[position].isLetter() || source[position].isDigit() || source[position] == '_' || source[position] == '.')) {
+                    while (position < source.length) {
+                        if (startWithThing) {
+                            if (source[position] == '`') break
+                        }
+                        else if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_' || source[position] == '.')) break
+
                         str += source[position]
-                        if (source[position].isDigit()) amountDigit++
+                        if (!startWithThing) if (source[position].isDigit()) amountDigit++
                         position++
                     }
 
