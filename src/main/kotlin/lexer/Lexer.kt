@@ -94,13 +94,15 @@ class Lexer(val source: String) {
                     }
 
                     if (!startWithBacktick) {
+                        val strNoNumbers = str.substring(0, str.length - amountDigit)
                         var found = false
                         for (type in TokenType.entries) {
-                            if (type.word != null && type.word == str) {
+                            if (type.word != null && type.word == strNoNumbers) {
                                 tokens.add(Token(
                                     type,
                                     type.word
                                 ))
+                                if (amountDigit > 0) position -= amountDigit
                                 found = true
                                 break
                             }
