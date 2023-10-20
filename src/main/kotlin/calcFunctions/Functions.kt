@@ -53,6 +53,7 @@ val functions = mapOf(
     listOf("round") to RoundFunction,
     listOf("parseNumber", "parsenum", "parseNum", "parsenumber", "num", "number") to ParseNumberFunction,
     listOf("str", "string") to AsStringFunction,
+    listOf("charCode") to CharCodeFunction,
     listOf("bool", "boolean") to BooleanFunction,
     listOf("Regex", "RegEx", "regex", "regEx", "regularEx", "regularex", "regularExpression", "regularexpression") to RegexFunction,
     listOf("rand", "random") to RandomFunction,
@@ -602,6 +603,21 @@ object WriteFunction : CalcFunc {
         }
 
         return 0
+    }
+
+}
+
+object CharCodeFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(VarargsNode("code", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val output = StringBuilder()
+        for (num in argumentSet.getVarargValue<Number>("code")) {
+            output.append(Char(num.toInt()))
+        }
+        return output.toString()
     }
 
 }

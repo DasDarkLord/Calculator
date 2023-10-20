@@ -37,3 +37,4 @@ nuh uh uh uh<br>
 nuh uh uh uh<br>
 nuh uh uh uh<br>
 nuh uh uh uh<br>
+^ more complicated version for that is `((charCode(110, 117, 104)" "((charCode(117,104)" ")3charCode(10))20).replace(Regex(charCode(10)+"$"), "")`
