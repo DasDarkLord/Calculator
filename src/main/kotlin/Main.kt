@@ -97,11 +97,7 @@ fun prettierVersion(input: Any): String {
     if (input is Number) {
         if (input is Double || input is Float) {
             val d = input.toDouble()
-            if ((d - d.toInt()) > 0) {
-                val format = DecimalFormat("#")
-                format.maximumFractionDigits = 8
-                return format.format(d)
-            }
+            if ((d - d.toInt()) > 0) DecimalFormat("#").format(d)
             return d.toInt().toString()
         } else return input.toString()
     }
