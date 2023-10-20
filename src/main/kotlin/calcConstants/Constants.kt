@@ -1,8 +1,11 @@
 package calcConstants
 
+import kotlin.math.E
+import kotlin.math.PI
+
 val constants = mutableMapOf(
-    listOf("pi") to 3.14159,
-    listOf("e", "euler") to 2.71828,
+    listOf("pi") to PI,
+    listOf("e", "euler") to E,
     listOf("infinity", "inf", "positive_infinity") to Double.POSITIVE_INFINITY,
     listOf("NaN", "nan", "NAN") to Double.NaN,
     listOf("colors") to mapOf(

@@ -3,6 +3,7 @@ import lexer.Lexer
 import lexer.Token
 import lexer.TokenType
 import parser.NodeParser
+import java.text.DecimalFormat
 import java.util.Scanner
 
 fun main(args: Array<String>) {
@@ -46,9 +47,9 @@ fun printColored(tokens: List<Token>) {
         output += when (token.type) {
             TokenType.NUMBER -> "\u001b[38;5;1m" + prettierVersion(token.value)
             TokenType.STRING -> "\u001b[38;5;87m\"" + fixEscapes(prettierVersion(token.value)) + "\""
-            TokenType.IDENTIFIER -> "\u001b[38;5;221m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
+            TokenType.IDENTIFIER -> "\u001b[38;5;221m" + backticksIfNeeded(prettierVersion(token.value))
             TokenType.CLASS_FUNCTION_CALL -> "\u001B[38;5;231m.\u001b[38;5;147m" + prettierVersion(token.value)
-            TokenType.FUNCTION_CALL -> "\u001b[38;5;147m" + (if (token.value.toString().contains(" ")) "`" else "") + prettierVersion(token.value) + (if (token.value.toString().contains(" ")) "`" else "")
+            TokenType.FUNCTION_CALL -> "\u001b[38;5;147m" + backticksIfNeeded(prettierVersion(token.value), true)
             TokenType.IMPLICIT_MULTIPLICATION, TokenType.UNDEFINED -> "\u001b[37m" + prettierVersion(token.value)
             TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
             TokenType.WHITESPACE -> " "
@@ -66,6 +67,24 @@ fun printColored(tokens: List<Token>) {
     println(output)
 }
 
+fun backticksIfNeeded(str: String, digitsAllowed: Boolean = false): String {
+    var needsBackticks = false
+    for (char in str) {
+        if (digitsAllowed) {
+            if (!char.isLetterOrDigit()) {
+                needsBackticks = true
+                break
+            }
+        } else {
+            if (!char.isLetter()) {
+                needsBackticks = true
+                break
+            }
+        }
+    }
+    return (if (needsBackticks) "`" else "") + str + (if (needsBackticks) "`" else "")
+}
+
 fun fixEscapes(str: String): String {
     return str.replace("\n", "\\n").replace("\t", "\\t").replace("\\\\", "\\\\\\\\")
         .replace("\r", "\\r")
@@ -78,7 +97,11 @@ fun prettierVersion(input: Any): String {
     if (input is Number) {
         if (input is Double || input is Float) {
             val d = input.toDouble()
-            if ((d - d.toInt()) > 0) return d.toString()
+            if ((d - d.toInt()) > 0) {
+                val format = DecimalFormat("#")
+                format.maximumFractionDigits = 8
+                return format.format(d)
+            }
             return d.toInt().toString()
         } else return input.toString()
     }
