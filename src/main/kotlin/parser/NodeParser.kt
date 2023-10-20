@@ -138,7 +138,16 @@ class NodeParser(private val tokens: MutableList<Token>) {
     private fun parseNumber(): TreeNode {
         val token = tokens[index]
         index++
-        return parseOtherStuff(TreeNode("number", value = token.value))
+
+        var numberValue = 0.0
+        if (token.value is String) {
+            if (token.value.startsWith("0b")) numberValue = (token.value.replace(Regex("^0b"), "0")).toInt(2).toDouble()
+            else if (token.value.startsWith("0x")) numberValue = (token.value.replace(Regex("^0x"), "0")).toInt(16).toDouble()
+        } else {
+            numberValue = token.value as Double
+        }
+
+        return parseOtherStuff(TreeNode("number", value = numberValue))
     }
 
     private fun parseString(): TreeNode {

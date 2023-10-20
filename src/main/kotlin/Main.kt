@@ -3,10 +3,14 @@ import lexer.Lexer
 import lexer.Token
 import lexer.TokenType
 import parser.NodeParser
+import java.io.OutputStream
+import java.io.PrintStream
 import java.text.DecimalFormat
 import java.util.Scanner
 
 fun main(args: Array<String>) {
+    System.setErr(PrintStreamImpl()) // to disable SLF4J errors (i hate them)
+
     val scanner = Scanner(System.`in`)
     while (true) {
         print("> ")
@@ -117,4 +121,15 @@ fun prettierVersion(input: Any): String {
     }
 
     return input.toString()
+}
+
+class PrintStreamImpl : PrintStream(System.err) {
+    private var slf4jCount = 0
+    override fun println(s: String?) {
+        if (s != null && s.startsWith("SLF4J:") && slf4jCount < 3) { // SLF4J only sends 3 messages at the start
+            slf4jCount++
+            return
+        }
+        super.println(s)
+    }
 }

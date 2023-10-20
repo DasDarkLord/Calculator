@@ -21,8 +21,28 @@ class Lexer(val source: String) {
             when {
                 source[position].isDigit() -> {
                     var num = ""
+                    var type = "norm" // norm, bin, hex
                     var amountPoint = 0
-                    while (position < source.length && (source[position].isDigit() || (source[position] == '.' && amountPoint == 0) || source[position] == '_')) {
+
+                    var isHexLet = false
+
+                    while (position < source.length && (source[position].isDigit() || (source[position] == '.' && amountPoint == 0) || source[position] == '_' || source[position] == 'b' || source[position] == 'x' || isHexLet)) {
+                        if (source[position] == 'x' || (source[position] == 'b' && type != "hex")) {
+                            if (type != "norm") break
+                            if (num != "0") break
+
+                            type = if (source[position] == 'x') "hex" else "bin"
+                            num += source[position]
+
+                            position++
+
+                            isHexLet = false
+                            if (position < source.length && type == "hex" && source[position].toString().matches(Regex("[abcdefABCDEF]"))) {
+                                isHexLet = true
+                            }
+
+                            continue
+                        }
                         if (source[position] == '_') {
                             position++
                             continue
@@ -30,12 +50,22 @@ class Lexer(val source: String) {
                         if (source[position] == '.') amountPoint = 1
                         num += source[position]
                         position++
+
+                        isHexLet = false
+                        if (position < source.length && type == "hex" && source[position].toString().matches(Regex("[abcdefABCDEF]"))) {
+                            isHexLet = true
+                        }
                     }
                     position--
 
+                    var value: Any = num
+                    if (type == "norm") {
+                        value = if (num.toDoubleOrNull() == null) 0.0 else num.toDouble()
+                    }
+
                     tokens.add(Token(
                         TokenType.NUMBER,
-                        if (num.toDoubleOrNull() == null) 0 else num.toDouble()
+                        value
                     ))
                 }
                 source[position] == '"' || source[position] == '\'' -> {
