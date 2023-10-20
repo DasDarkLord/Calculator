@@ -1,4 +1,7 @@
-# My awesome calculator
+<div align="center">
+    <img src="caclculclatctor.png" alt="uuuh whar">
+    <h1>Caclculator</h1>
+</div>
 
 calculate
 
