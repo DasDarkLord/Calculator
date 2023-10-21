@@ -29,6 +29,14 @@ application {
     mainClassName = 'MainKt'
 }
 
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "MainKt"
+        )
+    }
+}
+
 sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
 }

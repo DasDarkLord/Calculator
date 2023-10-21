@@ -28,6 +28,7 @@ fun main(args: Array<String>) {
 
         val result = Evaluator.evaluateTree(tree)
         println(prettierVersion(result))
+        print("\u001b[0m") // reset ansi formatting
     }
 }
 

@@ -11,14 +11,22 @@ val constants = mutableMapOf(
     listOf("colors") to mapOf(
         "black" to "\u001B[30m",
         "red" to "\u001B[31m",
-        "geren" to "\u001B[32m",
+        "green" to "\u001B[32m",
         "yellow" to "\u001B[33m",
         "blue" to "\u001B[34m",
-        "meganta" to "\u001B[35m",
+        "magenta" to "\u001B[35m",
         "cyan" to "\u001b[36m",
         "white" to "\u001B[37m",
         "default" to "\u001B[39m",
-        "reset" to "\u001b[0m"
+        "reset" to "\u001b[0m",
+        "bold" to "\u001b[1m",
+        "dim" to "\u001b[2m", "faint" to "\u001b[2m",
+        "italic" to "\u001b[3m",
+        "underline" to "\u001b[4m",
+        "blinking" to "\u001b[5m",
+        "inverse" to "\u001b[7m", "rverse" to "\u001b[7m",
+        "hidden" to "\u001b[8m", "invisible" to "\u001b[8m",
+        "strikethrough" to "\u001b[9m"
     )
 )
 
