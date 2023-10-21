@@ -1,5 +1,6 @@
 package lexer
 
+import calcConstants.advancedReplacements
 import calcConstants.constants
 import calcConstants.replacements
 import calcConstants.userConstants
@@ -13,6 +14,7 @@ class Lexer(val source: String) {
         val tokens = mutableListOf<Token>()
         var src = source.trim()
         for ((pattern, replaceWith) in replacements) src = pattern.toPattern().matcher(src).replaceAll(replaceWith)
+        for ((pattern, replaceWith) in advancedReplacements) src = pattern.replace(src, replaceWith)
         val source = src
 
         var position = 0

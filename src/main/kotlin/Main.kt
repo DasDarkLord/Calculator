@@ -7,6 +7,7 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.text.DecimalFormat
 import java.util.Scanner
+import kotlin.math.floor
 
 fun main(args: Array<String>) {
     System.setErr(PrintStreamImpl()) // to disable SLF4J errors (i hate them)
@@ -74,12 +75,12 @@ fun backticksIfNeeded(str: String, digitsAllowed: Boolean = false): String {
     var needsBackticks = false
     for (char in str) {
         if (digitsAllowed) {
-            if (!char.isLetterOrDigit()) {
+            if (!char.isLetterOrDigit() && char != '_') {
                 needsBackticks = true
                 break
             }
         } else {
-            if (!char.isLetter()) {
+            if (!char.isLetter() && char != '_') {
                 needsBackticks = true
                 break
             }
@@ -90,7 +91,7 @@ fun backticksIfNeeded(str: String, digitsAllowed: Boolean = false): String {
 
 fun fixEscapes(str: String): String {
     return str.replace("\n", "\\n").replace("\t", "\\t").replace("\\\\", "\\\\\\\\")
-        .replace("\r", "\\r")
+        .replace("\r", "\\r").replace("\"", "\\\"")
 }
 
 /**
@@ -100,7 +101,7 @@ fun prettierVersion(input: Any): String {
     if (input is Number) {
         if (input is Double || input is Float) {
             val d = input.toDouble()
-            if ((d - d.toInt()) > 0) DecimalFormat("#").format(d)
+            if (d != d.toInt().toDouble()) return d.toString()
             return d.toInt().toString()
         } else return input.toString()
     }

@@ -4,8 +4,8 @@ import kotlin.math.E
 import kotlin.math.PI
 
 val constants = mutableMapOf(
-    listOf("pi") to PI,
-    listOf("e", "euler") to E,
+    listOf("pi", "Archimedes' Constant (pi)", "Archimedes' Constant") to PI,
+    listOf("e", "euler", "Base of Natural Logarithms", "Base of Natural Logarithms (e)") to E,
     listOf("infinity", "inf", "positive_infinity") to Double.POSITIVE_INFINITY,
     listOf("NaN", "nan", "NAN") to Double.NaN,
     listOf("colors") to mapOf(

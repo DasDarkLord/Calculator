@@ -216,9 +216,9 @@ object AssignEvaluationType : LeftRightEvaluationType() {
         if (type == "assignLeft" && !(left.type == "id" || left.type == "index" || left.type == "func_call")) type = "checkEquals"
 
         if (type == "assignLeft") {
-            val value = Evaluator.evaluateTree(right)
-
             if (left.type == "index") {
+                val value = Evaluator.evaluateTree(right)
+
                 var id = left.left!!
                 if (id.type == "index") {
                     return AssignEvaluationType.evaluate(id, label)
@@ -250,6 +250,8 @@ object AssignEvaluationType : LeftRightEvaluationType() {
                     id to userFunctions[listOf(id)]
                 )
             }
+
+            val value = Evaluator.evaluateTree(right)
 
             userConstants[listOf(id as String)] = value
             return mapOf(
