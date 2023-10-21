@@ -13,7 +13,6 @@ class Lexer(val source: String) {
         val tokens = mutableListOf<Token>()
         var src = source.trim()
         for ((pattern, replaceWith) in replacements) src = pattern.toPattern().matcher(src).replaceAll(replaceWith)
-
         val source = src
 
         var position = 0

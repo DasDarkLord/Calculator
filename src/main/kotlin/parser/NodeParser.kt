@@ -286,9 +286,22 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseExpression(): TreeNode {
+        var leftNode = parseEqualsTernary()
+
+        while (index < tokens.size && tokens[index].type == TokenType.ASSIGN) {
+            val operator = tokens[index].type.id
+            index++
+            val rightNode = parseEqualsTernary()
+            leftNode = TreeNode(operator, leftNode, rightNode)
+        }
+
+        return leftNode
+    }
+
+    private fun parseEqualsTernary(): TreeNode {
         var leftNode = parseColon()
 
-        while (index < tokens.size && (tokens[index].type == TokenType.ASSIGN || tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.TERNARY)) {
+        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.TERNARY)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseColon()
