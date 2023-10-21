@@ -27,7 +27,6 @@ fun csch(x: Double): Double {
 }
 
 fun multifactorial(x: Double, f: Double): Double {
-    if (x < 0) return negativeFactorial(x) // no multifactorial for negative nums
     if (x < 0 || x == 1.0) return x
 
     return x * multifactorial(x - f, f)
