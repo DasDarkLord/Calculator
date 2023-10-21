@@ -1,35 +1,51 @@
 package lexer
 
 enum class TokenType {
+    // Types
     NUMBER("num"),
     STRING("string"),
     IDENTIFIER("id"),
+    UNDEFINED("undefined", word = "undefined"),
+    TRUE("true", word = "true"),
+    FALSE("false", word = "false"),
+
+    // Functions
     CLASS_FUNCTION_CALL("func_call0"),
     FUNCTION_CALL("func_call"),
+
+    // Operators
     ADDITION("add", '+'),
     SUBTRACTION("sub", '-'),
     MULTIPLICATION("mul", '*'),
     IMPLICIT_MULTIPLICATION("imul"),
     DIVISION("div", '/'),
     EXPONENTIATION("pow", '^'),
-    ASSIGN("eq", '='),
-    EQUALS("eq0", word = "=="),
-    FACTORIAL("factorial", '!'),
     MODULUS("mod", '%'),
+    FACTORIAL("factorial", '!'),
+    ASSIGN("eq", '='),
+
+    // Checks
+    EQUALS("eq0", word = "=="),
+    NOT_EQUALS("neq", word = "!="),
+    GREATER("greater", '>'),
+    GREATER_EQUAL("geq", word = ">="),
+    LESS("less", '<'),
+    LESS_EQUAL("leq", word = "<="),
+    TERNARY("ternary", '?'),
+
+    // Misc
     COMMA("comma", ','),
     COLON("colon", ':'),
-    TERNARY("ternary", '?'),
     OPEN_CURLY("ocurly", '{'),
     CLOSED_CURLY("ccurly", '}'),
     OPEN_BRACKET("obracket", '['),
     CLOSED_BRACKET("cbracket", ']'),
     OPEN_PARENTHESIS("oparen", '('),
     CLOSED_PARENTHESIS("cparen", ')'),
-    UNDEFINED("undefined", word = "undefined"),
-    TRUE("true", word = "true"),
-    FALSE("false", word = "false"),
     COALESCING("coalescing", word = "?:"),
-    WHITESPACE("white", ' ');
+    WHITESPACE("white", ' '),
+    ENDISTIC("endistic", word = "endistic") // Endistic asked to be a token
+    ;
 
     val id: String;
     val symbol: Char?

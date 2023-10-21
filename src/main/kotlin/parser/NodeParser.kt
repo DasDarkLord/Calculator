@@ -1,6 +1,7 @@
 package parser
 
 import evaluator.Evaluator
+import evaluator.Undefined
 import lexer.Token
 import lexer.TokenType
 import utils.deepCopy
@@ -174,6 +175,11 @@ class NodeParser(private val tokens: MutableList<Token>) {
         return parseOtherStuff(TreeNode("id", value = token.value))
     }
 
+    private fun parseEndistic(): TreeNode {
+        index++
+        return TreeNode("undefined", value = Undefined)
+    }
+
     private fun parseDictionary(): TreeNode {
         val map = mutableMapOf<Any, Any>()
 
@@ -301,7 +307,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
     private fun parseEqualsTernary(): TreeNode {
         var leftNode = parseColon()
 
-        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.TERNARY)) {
+        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.NOT_EQUALS || tokens[index].type == TokenType.LESS|| tokens[index].type == TokenType.LESS_EQUAL|| tokens[index].type == TokenType.GREATER_EQUAL|| tokens[index].type == TokenType.GREATER    || tokens[index].type == TokenType.TERNARY)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseColon()
@@ -408,6 +414,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
             return parseTrue()
         } else if (tokens[index].type == TokenType.FALSE) {
             return parseFalse()
+        } else if (tokens[index].type == TokenType.ENDISTIC) {
+            return parseEndistic()
         } else if (tokens[index].type == TokenType.OPEN_PARENTHESIS) {
             index++
             val expressionNode = parseExpression()

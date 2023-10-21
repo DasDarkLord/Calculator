@@ -198,6 +198,68 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
 
 }
 
+object NotEqualsEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        return Evaluator.evaluateTree(left) != Evaluator.evaluateTree(right)
+    }
+
+    override val forType: String
+        get() = "neq"
+
+}
+
+object GreaterEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        val l = Evaluator.evaluateTree(left)
+        val r = Evaluator.evaluateTree(right)
+        if (l as? Number != null && r as? Number != null) return l.toDouble() > r.toDouble()
+        return Undefined
+    }
+
+    override val forType: String
+        get() = "greater"
+
+}
+
+object LessEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        val l = Evaluator.evaluateTree(left)
+        val r = Evaluator.evaluateTree(right)
+        if (l as? Number != null && r as? Number != null) return l.toDouble() < r.toDouble()
+        return Undefined
+    }
+
+    override val forType: String
+        get() = "less"
+
+}
+
+object GreaterEqualsEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        val l = Evaluator.evaluateTree(left)
+        val r = Evaluator.evaluateTree(right)
+        if (l as? Number != null && r as? Number != null) return l.toDouble() >= r.toDouble()
+        return Undefined
+    }
+
+    override val forType: String
+        get() = "geq"
+
+}
+
+object LessEqualsEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        val l = Evaluator.evaluateTree(left)
+        val r = Evaluator.evaluateTree(right)
+        if (l as? Number != null && r as? Number != null) return l.toDouble() <= r.toDouble()
+        return Undefined
+    }
+
+    override val forType: String
+        get() = "leq"
+
+}
+
 object AssignEvaluationType : LeftRightEvaluationType() {
     override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         var type = "assignLeft"

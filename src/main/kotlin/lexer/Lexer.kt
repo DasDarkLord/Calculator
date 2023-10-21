@@ -204,13 +204,17 @@ class Lexer(val source: String) {
                     position--
 
                     val typeLengthComparator = Comparator { a: TokenType, b: TokenType ->
-                        if (a.word == null || b.word == null) return@Comparator -1
-                        b.word.length - a.word.length
+                        val aWord = a.word ?: a.symbol.toString()
+                        val bWord = b.word ?: b.symbol.toString()
+
+                        bWord.length - aWord.length
                     }
 
                     val sortedByLengthEntries = TokenType.entries
                         .filter { it.symbol != null || it.word != null }
                         .sortedWith(typeLengthComparator)
+
+                    println(sortedByLengthEntries)
 
                     for (i in 0..sortedByLengthEntries.size) {
                         for (type in sortedByLengthEntries) {
