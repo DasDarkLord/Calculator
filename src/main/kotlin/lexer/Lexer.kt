@@ -196,33 +196,38 @@ class Lexer(val source: String) {
                     ))
                 }
                 else -> {
-                    if (source[position] == '?') {
+                    var str = ""
+                    while (!source[position].isLetterOrDigit() && source[position] != '"' && source[position] != '\'' && source[position] != '.') {
+                        str += source[position]
                         position++
-                        if (position < source.length && source[position] == ':') { // we love special cases for coalescing
-                            position++
-                            tokens.add(Token(
-                                TokenType.COALESCING,
-                                "?:"
-                            ))
-                            continue
-                        } else position--
-                    } else if (source[position] == '=') {
-                        position++
-                        if (position < source.length && source[position] == '=') { // we love special cases for ==
-                            position++
-                            tokens.add(Token(
-                                TokenType.EQUALS,
-                                "=="
-                            ))
-                        } else position--
+                    }
+                    position--
+
+                    val typeLengthComparator = Comparator { a: TokenType, b: TokenType ->
+                        if (a.word == null || b.word == null) return@Comparator -1
+                        b.word.length - a.word.length
                     }
 
-                    for (type in TokenType.entries) {
-                        if (source[position] == type.symbol) {
-                            tokens.add(Token(
-                                type,
-                                type.symbol.toString()
-                            ))
+                    val sortedByLengthEntries = TokenType.entries
+                        .filter { it.symbol != null || it.word != null }
+                        .sortedWith(typeLengthComparator)
+
+                    for (i in 0..sortedByLengthEntries.size) {
+                        for (type in sortedByLengthEntries) {
+                            if (str.isEmpty()) break
+                            if ((type.word != null && str.contains(type.word)) || (type.symbol != null && str.contains(type.symbol.toString()))) {
+                                val op = if (type.word != null && str.contains(type.word)) type.word
+                                else type.symbol.toString()
+                                if (!str.startsWith(op)) continue
+
+                                tokens.add(Token(
+                                    type,
+                                    op
+                                ))
+
+                                val range = IntRange(str.indexOf(op), str.indexOf(op) + op.length - 1)
+                                str = str.removeRange(range)
+                            }
                         }
                     }
                 }

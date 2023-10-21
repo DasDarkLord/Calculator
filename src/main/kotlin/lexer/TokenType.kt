@@ -13,7 +13,7 @@ enum class TokenType {
     DIVISION("div", '/'),
     EXPONENTIATION("pow", '^'),
     ASSIGN("eq", '='),
-    EQUALS("eq0"),
+    EQUALS("eq0", word = "=="),
     FACTORIAL("factorial", '!'),
     MODULUS("mod", '%'),
     COMMA("comma", ','),
@@ -28,7 +28,7 @@ enum class TokenType {
     UNDEFINED("undefined", word = "undefined"),
     TRUE("true", word = "true"),
     FALSE("false", word = "false"),
-    COALESCING("coalescing"),
+    COALESCING("coalescing", word = "?:"),
     WHITESPACE("white", ' ');
 
     val id: String;
