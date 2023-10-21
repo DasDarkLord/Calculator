@@ -13,10 +13,10 @@ import java.lang.Exception
 import kotlin.math.pow
 
 abstract class LeftRightEvaluationType : EvaluationType {
-    abstract fun evaluate(left: TreeNode, right: TreeNode): Any
-    override fun evaluate(tree: TreeNode): Any {
+    abstract fun evaluate(left: TreeNode, right: TreeNode, label: String): Any
+    override fun evaluate(tree: TreeNode, label: String): Any {
         if (tree.left == null || tree.right == null) return 0
-        return evaluate(tree.left, tree.right)
+        return evaluate(tree.left, tree.right, label)
     }
 
     override val aliases: List<String>
@@ -24,10 +24,10 @@ abstract class LeftRightEvaluationType : EvaluationType {
 }
 
 abstract class ValueEvaluationType : EvaluationType {
-    abstract fun evaluate(value: Any): Any
-    override fun evaluate(tree: TreeNode): Any {
+    abstract fun evaluate(value: Any, label: String): Any
+    override fun evaluate(tree: TreeNode, label: String): Any {
         if (tree.value == null) return 0
-        return evaluate(tree.value)
+        return evaluate(tree.value, label)
     }
 
     override val aliases: List<String>
@@ -37,7 +37,7 @@ abstract class ValueEvaluationType : EvaluationType {
 interface EvaluationType {
     val forType: String
     val aliases: List<String>
-    fun evaluate(tree: TreeNode): Any
+    fun evaluate(tree: TreeNode, label: String): Any
 }
 
 
@@ -46,7 +46,7 @@ interface EvaluationType {
 
 // Values
 object NumberEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         return numToDouble(value)
     }
 
@@ -56,7 +56,7 @@ object NumberEvaluationType : ValueEvaluationType() {
 }
 
 object StringEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         return value.toString()
     }
 
@@ -66,7 +66,7 @@ object StringEvaluationType : ValueEvaluationType() {
 }
 
 object IdEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         val combinedMaps = userConstants
         for (constant in constants) combinedMaps[constant.key] = constant.value
 
@@ -92,7 +92,7 @@ object FunctionEvaluationType : EvaluationType {
     override val aliases: List<String>
         get() = emptyList()
 
-    override fun evaluate(tree: TreeNode): Any {
+    override fun evaluate(tree: TreeNode, label: String): Any {
         val objs = mutableListOf<TreeNode>()
         for (node in tree.arguments!!) objs.add(node)
 
@@ -127,9 +127,9 @@ object ClassFunctionEvaluationType : EvaluationType {
     override val aliases: List<String>
         get() = emptyList()
 
-    override fun evaluate(tree: TreeNode): Any {
+    override fun evaluate(tree: TreeNode, label: String): Any {
         val affected =
-            if (tree.left!!.type == "id") IdEvaluationType.evaluate(tree.left)
+            if (tree.left!!.type == "id") IdEvaluationType.evaluate(tree.left, "id")
             else Evaluator.evaluateTree(tree.left)
 
         val functionTree = tree.right!!
@@ -171,7 +171,7 @@ object ClassFunctionEvaluationType : EvaluationType {
 }
 
 object DictionaryEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         return value as MutableMap<*, *>
     }
 
@@ -180,7 +180,7 @@ object DictionaryEvaluationType : ValueEvaluationType() {
 }
 
 object ListEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         return value as MutableList<*>
     }
 
@@ -189,7 +189,17 @@ object ListEvaluationType : ValueEvaluationType() {
 }
 
 object EqualsEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        return Evaluator.evaluateTree(left) == Evaluator.evaluateTree(right)
+    }
+
+    override val forType: String
+        get() = "eq0"
+
+}
+
+object AssignEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         var type = "assignLeft"
         if (left.type == "id") {
             if (constantExists(left.value!! as String)) type = "checkEquals"
@@ -211,7 +221,7 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
             if (left.type == "index") {
                 var id = left.left!!
                 if (id.type == "index") {
-                    return EqualsEvaluationType.evaluate(id)
+                    return AssignEvaluationType.evaluate(id, label)
                 }
 
                 val toChange = left.right!!.value
@@ -254,8 +264,26 @@ object EqualsEvaluationType : LeftRightEvaluationType() {
         get() = "eq"
 }
 
+object TernaryEvaluationType : LeftRightEvaluationType() {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
+        if (right.type != "colon") return Undefined
+
+        val condition = Evaluator.evaluateTree(left)
+
+        val l = Evaluator.evaluateTree(right.left!!)
+        val r = Evaluator.evaluateTree(right.right!!)
+
+        return if (condition !is Boolean) Undefined
+        else if (condition) l else r
+    }
+
+    override val forType: String
+        get() = "ternary"
+
+}
+
 object CoalescingEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val leftEval = Evaluator.evaluateTree(left)
         if (leftEval is Undefined) return Evaluator.evaluateTree(right)
 
@@ -267,7 +295,7 @@ object CoalescingEvaluationType : LeftRightEvaluationType() {
 }
 
 object IndexEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Map<*, *>) {
@@ -298,7 +326,7 @@ object IndexEvaluationType : LeftRightEvaluationType() {
 }
 
 object UndefinedEvaluationType : ValueEvaluationType() {
-    override fun evaluate(value: Any): Any {
+    override fun evaluate(value: Any, label: String): Any {
         return Undefined
     }
 
@@ -306,9 +334,29 @@ object UndefinedEvaluationType : ValueEvaluationType() {
         get() = "undefined"
 }
 
+object TrueEvaluationType : ValueEvaluationType() {
+    override fun evaluate(value: Any, label: String): Any {
+        return true
+    }
+
+    override val forType: String
+        get() = "true"
+
+}
+
+object FalseEvaluationType : ValueEvaluationType() {
+    override fun evaluate(value: Any, label: String): Any {
+        return false
+    }
+
+    override val forType: String
+        get() = "false"
+
+}
+
 // Operations
 object AddEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (r is Number && l is Number) {
@@ -327,7 +375,7 @@ object AddEvaluationType : LeftRightEvaluationType() {
 }
 
 object SubEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (r is Number && l is Number) {
@@ -346,7 +394,7 @@ object SubEvaluationType : LeftRightEvaluationType() {
 }
 
 object MulEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble() * r.toDouble()
@@ -372,7 +420,7 @@ object MulEvaluationType : LeftRightEvaluationType() {
 }
 
 object DivEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble() / r.toDouble()
@@ -388,7 +436,7 @@ object DivEvaluationType : LeftRightEvaluationType() {
 }
 
 object PowEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble().pow(r.toDouble())
@@ -401,7 +449,7 @@ object PowEvaluationType : LeftRightEvaluationType() {
 }
 
 object ModulusEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         val l = Evaluator.evaluateTree(left)
         val r = Evaluator.evaluateTree(right)
         if (l is Number && r is Number) return l.toDouble() % r.toDouble()
@@ -413,7 +461,7 @@ object ModulusEvaluationType : LeftRightEvaluationType() {
 }
 
 object FactorialEvaluationType : LeftRightEvaluationType() {
-    override fun evaluate(left: TreeNode, right: TreeNode): Any {
+    override fun evaluate(left: TreeNode, right: TreeNode, label: String): Any {
         var number = Evaluator.evaluateTree(left)
         val factorial = Evaluator.evaluateTree(right) as Double
         if (number !is Number) return 0

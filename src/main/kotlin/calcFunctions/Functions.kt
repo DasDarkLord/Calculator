@@ -533,7 +533,8 @@ object IdentifierFunction : CalcFunc {
     override fun execute(argumentSet: ArgumentSet): Any {
         return IdEvaluationType.evaluate(TreeNode(
             "id",
-            value = argumentSet.getValue<String>("name"))
+            value = argumentSet.getValue<String>("name")),
+            "id"
         )
     }
 
@@ -557,7 +558,7 @@ object InvokeFunction : CalcFunc {
             arguments = arguments
         )
 
-        return FunctionEvaluationType.evaluate(tree)
+        return FunctionEvaluationType.evaluate(tree, "invoke")
     }
 
 }
@@ -587,7 +588,7 @@ object InvokeClassFunction : CalcFunc {
             right = functionTree
         )
 
-        return ClassFunctionEvaluationType.evaluate(tree)
+        return ClassFunctionEvaluationType.evaluate(tree, "invokeTo")
     }
 
 }

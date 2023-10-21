@@ -3,6 +3,7 @@ package calcFunctions
 import calcFunctions.argumentSet.ArgumentSet
 import calcFunctions.patternSet.PatternSet
 import calcFunctions.patternSet.argument.impl.AnyArgument
+import calcFunctions.patternSet.argument.impl.ListArgument
 import calcFunctions.patternSet.argument.impl.NumberArgument
 import calcFunctions.patternSet.argument.impl.RegexArgument
 import calcFunctions.patternSet.argument.impl.StringArgument
@@ -14,6 +15,7 @@ import prettierVersion
 
 val classFunctions = mapOf(
     listOf("add") to listOf(ListAddFunction, MapAddFunction),
+    listOf("concat") to listOf(ListConcatFunction),
     listOf("put") to listOf(MapAddFunction),
     listOf("replace") to listOf(ReplaceFunction)
 )
@@ -50,6 +52,23 @@ object ListAddFunction : ClassFunction<MutableList<*>> {
 
         return affected
     }
+}
+
+object ListConcatFunction : ClassFunction<MutableList<*>> {
+    override val forClass: Class<*>
+        get() = MutableList::class.java
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("list", ListArgument()))
+
+    override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
+        affected as MutableList<Any>
+
+        affected.addAll(argumentSet.getValue("list"))
+
+        return affected
+    }
+
 }
 
 object MapAddFunction : ClassFunction<MutableMap<*, *>> {

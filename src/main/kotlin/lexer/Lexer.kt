@@ -205,6 +205,15 @@ class Lexer(val source: String) {
                             ))
                             continue
                         } else position--
+                    } else if (source[position] == '=') {
+                        position++
+                        if (position < source.length && source[position] == '=') { // we love special cases for ==
+                            position++
+                            tokens.add(Token(
+                                TokenType.EQUALS,
+                                "=="
+                            ))
+                        } else position--
                     }
 
                     for (type in TokenType.entries) {

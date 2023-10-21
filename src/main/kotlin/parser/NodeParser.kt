@@ -135,6 +135,18 @@ class NodeParser(private val tokens: MutableList<Token>) {
         return TreeNode("undefined", value = token.value)
     }
 
+    private fun parseTrue(): TreeNode {
+        val token = tokens[index]
+        index++
+        return TreeNode("true", value = token.value)
+    }
+
+    private fun parseFalse(): TreeNode {
+        val token = tokens[index]
+        index++
+        return TreeNode("false", value = token.value)
+    }
+
     private fun parseNumber(): TreeNode {
         val token = tokens[index]
         index++
@@ -274,9 +286,22 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseExpression(): TreeNode {
+        var leftNode = parseColon()
+
+        while (index < tokens.size && (tokens[index].type == TokenType.ASSIGN || tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.TERNARY)) {
+            val operator = tokens[index].type.id
+            index++
+            val rightNode = parseColon()
+            leftNode = TreeNode(operator, leftNode, rightNode)
+        }
+
+        return leftNode
+    }
+
+    private fun parseColon(): TreeNode {
         var leftNode = parseAdditionAndSubtraction()
 
-        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS)) {
+        while (index < tokens.size && (tokens[index].type == TokenType.COLON)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseAdditionAndSubtraction()
@@ -366,6 +391,10 @@ class NodeParser(private val tokens: MutableList<Token>) {
             return parseList()
         } else if (tokens[index].type == TokenType.UNDEFINED) {
             return parseUndefined()
+        } else if (tokens[index].type == TokenType.TRUE) {
+            return parseTrue()
+        } else if (tokens[index].type == TokenType.FALSE) {
+            return parseFalse()
         } else if (tokens[index].type == TokenType.OPEN_PARENTHESIS) {
             index++
             val expressionNode = parseExpression()
@@ -413,7 +442,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION, TokenType.FACTORIAL,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
                 TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
-                TokenType.EQUALS, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON
+                TokenType.ASSIGN, TokenType.EQUALS, TokenType.TERNARY, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON
             )
             val valueTokenTypes = listOf(
                 TokenType.NUMBER, TokenType.STRING

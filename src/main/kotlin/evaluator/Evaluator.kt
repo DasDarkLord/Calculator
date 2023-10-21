@@ -29,7 +29,7 @@ class Evaluator {
             for (type in types) {
                 if (type.forType == tree.type || (type.aliases.contains(tree.type))) {
                     try {
-                        return type.evaluate(tree)
+                        return type.evaluate(tree, tree.type)
                     } finally {
                         if (constants != null) {
                             calcConstants.constants.clear()

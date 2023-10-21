@@ -18,10 +18,7 @@ fun main(args: Array<String>) {
         print("\u001b[2K\r")
 
         val tokens = Lexer(user).lexTokens()
-//        for (token in tokens) {
-//            if (token.type == TokenType.WHITESPACE) continue
-//            println(token)
-//        }
+//        println(tokens.mapNotNull { if (it.type == TokenType.WHITESPACE) null else it })
         print(">> ")
         printColored(tokens)
 
@@ -48,6 +45,7 @@ fun printColored(tokens: List<Token>) {
 
         val depthColor = depths[depth]
 
+        // ANSI Escape codes: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
         output += when (token.type) {
             TokenType.NUMBER -> "\u001b[38;5;1m" + prettierVersion(token.value)
             TokenType.STRING -> "\u001b[38;5;87m\"" + fixEscapes(prettierVersion(token.value)) + "\""
@@ -55,6 +53,7 @@ fun printColored(tokens: List<Token>) {
             TokenType.CLASS_FUNCTION_CALL -> "\u001B[38;5;231m.\u001b[38;5;147m" + prettierVersion(token.value)
             TokenType.FUNCTION_CALL -> "\u001b[38;5;147m" + backticksIfNeeded(prettierVersion(token.value), true)
             TokenType.IMPLICIT_MULTIPLICATION, TokenType.UNDEFINED -> "\u001b[37m" + prettierVersion(token.value)
+            TokenType.TRUE, TokenType.FALSE -> "\u001b[38;5;10m" + prettierVersion(token.value)
             TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)
             TokenType.WHITESPACE -> " "
             else -> "\u001b[38;5;231m" + prettierVersion(token.value)

@@ -12,11 +12,13 @@ enum class TokenType {
     IMPLICIT_MULTIPLICATION("imul"),
     DIVISION("div", '/'),
     EXPONENTIATION("pow", '^'),
-    EQUALS("eq", '='),
+    ASSIGN("eq", '='),
+    EQUALS("eq0"),
     FACTORIAL("factorial", '!'),
     MODULUS("mod", '%'),
     COMMA("comma", ','),
     COLON("colon", ':'),
+    TERNARY("ternary", '?'),
     OPEN_CURLY("ocurly", '{'),
     CLOSED_CURLY("ccurly", '}'),
     OPEN_BRACKET("obracket", '['),
@@ -24,6 +26,8 @@ enum class TokenType {
     OPEN_PARENTHESIS("oparen", '('),
     CLOSED_PARENTHESIS("cparen", ')'),
     UNDEFINED("undefined", word = "undefined"),
+    TRUE("true", word = "true"),
+    FALSE("false", word = "false"),
     COALESCING("coalescing"),
     WHITESPACE("white", ' ');
 
