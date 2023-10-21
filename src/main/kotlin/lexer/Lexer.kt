@@ -214,8 +214,6 @@ class Lexer(val source: String) {
                         .filter { it.symbol != null || it.word != null }
                         .sortedWith(typeLengthComparator)
 
-                    println(sortedByLengthEntries)
-
                     for (i in 0..sortedByLengthEntries.size) {
                         for (type in sortedByLengthEntries) {
                             if (str.isEmpty()) break
