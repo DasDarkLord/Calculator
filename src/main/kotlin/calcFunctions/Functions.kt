@@ -13,7 +13,9 @@ import evaluator.ClassFunctionEvaluationType
 import evaluator.Evaluator
 import evaluator.FunctionEvaluationType
 import evaluator.IdEvaluationType
+import lexer.Lexer
 import lexer.TokenType
+import parser.NodeParser
 import parser.TreeNode
 import prettierVersion
 import utils.*
@@ -62,7 +64,8 @@ val functions = mapOf(
     listOf("invoke") to InvokeFunction,
     listOf("invokeTo") to InvokeClassFunction,
     listOf("write") to WriteFunction,
-    listOf("if") to IfFunction
+    listOf("if") to IfFunction,
+    listOf("eval") to EvalFunction
 )
 
 fun functionExists(name: String): Boolean {
@@ -648,6 +651,20 @@ object IfFunction : CalcFunc {
     override fun execute(argumentSet: ArgumentSet): Any {
         if (argumentSet.getValue("boolean")) return Evaluator.evaluateTree(argumentSet.getValue("expression1"))
         else return Evaluator.evaluateTree(argumentSet.getValue("expression2"))
+    }
+
+}
+
+object EvalFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("expression", StringArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val expression = argumentSet.getValue<String>("expression")
+        val tokens = Lexer(expression).lexTokens()
+        val node = NodeParser.parseTokens(tokens)
+        return Evaluator.evaluateTree(node)
     }
 
 }

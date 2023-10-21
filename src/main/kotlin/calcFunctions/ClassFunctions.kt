@@ -11,6 +11,7 @@ import calcFunctions.patternSet.element.impl.AlternateSetElement
 import calcFunctions.patternSet.element.impl.OrderedSetElement
 import calcFunctions.patternSet.element.impl.SingletonNode
 import calcFunctions.patternSet.element.impl.StaticNode
+import evaluator.Undefined
 import prettierVersion
 
 val classFunctions = mapOf(

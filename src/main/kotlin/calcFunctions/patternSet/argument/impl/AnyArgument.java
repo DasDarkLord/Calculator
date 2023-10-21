@@ -3,9 +3,11 @@ package calcFunctions.patternSet.argument.impl;
 import calcFunctions.patternSet.argument.Argument;
 import evaluator.Evaluator;
 import evaluator.Undefined;
+import kotlin.jvm.internal.Intrinsics;
+import org.jetbrains.annotations.NotNull;
 import parser.TreeNode;
 
-public class AnyArgument extends Argument<Object> {
+public final class AnyArgument extends Argument<Object> {
 
     @Override
     public Object accept(TreeNode tree) {
@@ -18,7 +20,5 @@ public class AnyArgument extends Argument<Object> {
     public boolean accepts(TreeNode tree) {
         return true;
     }
-
-    public static AnyArgument INSTANCE = new AnyArgument();
 
 }
