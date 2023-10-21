@@ -300,22 +300,9 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseTerm(): TreeNode {
-        var leftNode = parseExponetiation()
-
-        while (index < tokens.size && (tokens[index].type == TokenType.MULTIPLICATION || tokens[index].type == TokenType.DIVISION)) {
-            val operator = tokens[index].type.id
-            index++
-            val rightNode = parseExponetiation()
-            leftNode = TreeNode(operator, leftNode, rightNode)
-        }
-
-        return leftNode
-    }
-
-    private fun parseExponetiation(): TreeNode {
         var leftNode = parseImplicitMultipliction()
 
-        while (index < tokens.size && (tokens[index].type == TokenType.EXPONENTIATION)) {
+        while (index < tokens.size && (tokens[index].type == TokenType.MULTIPLICATION || tokens[index].type == TokenType.DIVISION)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseImplicitMultipliction()
@@ -326,9 +313,22 @@ class NodeParser(private val tokens: MutableList<Token>) {
     }
 
     private fun parseImplicitMultipliction(): TreeNode {
-        var leftNode = parseCoalescing()
+        var leftNode = parseExponetiation()
 
         while (index < tokens.size && (tokens[index].type == TokenType.IMPLICIT_MULTIPLICATION)) {
+            val operator = tokens[index].type.id
+            index++
+            val rightNode = parseExponetiation()
+            leftNode = TreeNode(operator, leftNode, rightNode)
+        }
+
+        return leftNode
+    }
+
+    private fun parseExponetiation(): TreeNode {
+        var leftNode = parseCoalescing()
+
+        while (index < tokens.size && (tokens[index].type == TokenType.EXPONENTIATION)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseCoalescing()
