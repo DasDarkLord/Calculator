@@ -197,7 +197,7 @@ class Lexer(val source: String) {
                 }
                 else -> {
                     var str = ""
-                    while (!source[position].isLetterOrDigit() && source[position] != '"' && source[position] != '\'' && source[position] != '.') {
+                    while (position < source.length && !source[position].isLetterOrDigit() && source[position] != '"' && source[position] != '\'' && source[position] != '.') {
                         str += source[position]
                         position++
                     }
