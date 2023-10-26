@@ -512,10 +512,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 TokenType.NUMBER, TokenType.STRING
             )
 
-            val whiteSpaceFreeTokens = mutableListOf<Token>()
-            for (token in tokens) {
-                if (token.type != TokenType.WHITESPACE) whiteSpaceFreeTokens.add(token)
-            }
+            val whiteSpaceFreeTokens = tokens.mapNotNull { if (it.type == TokenType.WHITESPACE || it.type == TokenType.UNKNOWN_SYMBOL) null else it }
 
             val newTokens: MutableList<Token> = mutableListOf()
             for ((index, token) in whiteSpaceFreeTokens.withIndex()) {

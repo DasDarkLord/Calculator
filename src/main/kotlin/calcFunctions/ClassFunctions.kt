@@ -11,11 +11,13 @@ import calcFunctions.patternSet.element.impl.AlternateSetElement
 import calcFunctions.patternSet.element.impl.OrderedSetElement
 import calcFunctions.patternSet.element.impl.SingletonNode
 import calcFunctions.patternSet.element.impl.StaticNode
+import calcFunctions.patternSet.element.impl.VarargsNode
 import evaluator.Undefined
 import prettierVersion
 
 val classFunctions = mapOf(
     listOf("add") to listOf(ListAddFunction, MapAddFunction),
+    listOf("insert") to listOf(ListInsertFunction),
     listOf("concat") to listOf(ListConcatFunction),
     listOf("put") to listOf(MapAddFunction),
     listOf("replace") to listOf(ReplaceFunction)
@@ -34,22 +36,33 @@ object ListAddFunction : ClassFunction<MutableList<*>> {
         get() = MutableList::class.java
     override val patternSet: PatternSet
         get() = PatternSet()
-            .addElement(AlternateSetElement(
-                OrderedSetElement(
-                    SingletonNode("index", NumberArgument()),
-                    SingletonNode("value", AnyArgument(false))
-                ),
-                OrderedSetElement(
-                    StaticNode("index", null),
-                    SingletonNode("value", AnyArgument(false))
-                )
-            ))
+            .addElement(VarargsNode("values", AnyArgument(false)))
 
     override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
         affected as MutableList<*>
 
-        if (argumentSet.hasValue("index")) (affected as MutableList<Any>).add(argumentSet.getValue<Number>("index").toInt(), argumentSet.getValue("value"))
-        else (affected as MutableList<Any>).add(argumentSet.getValue("value"))
+        for (value in argumentSet.getVarargValue<Any>("values")) {
+            @Suppress("UNCHECKED_CAST")
+            (affected as MutableList<Any>).add(value)
+        }
+
+        return affected
+    }
+}
+
+object ListInsertFunction : ClassFunction<MutableList<*>> {
+    override val forClass: Class<*>
+        get() = MutableList::class.java
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("index", NumberArgument()))
+            .addElement(VarargsNode("values", AnyArgument(false)))
+
+    override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
+        affected as MutableList<*>
+
+        @Suppress("UNCHECKED_CAST")
+        (affected as MutableList<Any>).addAll(0, argumentSet.getVarargValue("values"))
 
         return affected
     }
@@ -60,12 +73,19 @@ object ListConcatFunction : ClassFunction<MutableList<*>> {
         get() = MutableList::class.java
     override val patternSet: PatternSet
         get() = PatternSet()
-            .addElement(SingletonNode("list", ListArgument()))
+            .addElement(VarargsNode("lists", ListArgument()))
 
     override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
+        @Suppress("UNCHECKED_CAST")
         affected as MutableList<Any>
 
-        affected.addAll(argumentSet.getValue("list"))
+        println(argumentSet)
+        for (value in argumentSet.getVarargValue<Any>("lists")) {
+            @Suppress("UNCHECKED_CAST")
+            value as MutableList<Any>
+
+            affected.addAll(value)
+        }
 
         return affected
     }
@@ -83,6 +103,7 @@ object MapAddFunction : ClassFunction<MutableMap<*, *>> {
     override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
         affected as MutableMap<*, *>
 
+        @Suppress("UNCHECKED_CAST")
         (affected as MutableMap<Any, Any>)[argumentSet.getValue<String>("key")] = argumentSet.getValue("value")
 
         return affected
