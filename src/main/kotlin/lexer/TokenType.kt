@@ -46,7 +46,8 @@ enum class TokenType {
     CLOSED_PARENTHESIS("cparen", ')'),
     COALESCING("coalescing", word = "?:"),
     WHITESPACE("white", ' '),
-    ENDISTIC("endistic", word = "endistic") // Endistic asked to be a token
+    ENDISTIC("endistic", word = "endistic"), // Endistic asked to be a token
+    UNKNOWN_SYMBOL("unknown")
     ;
 
     val id: String;

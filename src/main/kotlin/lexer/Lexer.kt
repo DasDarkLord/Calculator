@@ -13,7 +13,10 @@ class Lexer(val source: String) {
     fun lexTokens(): MutableList<Token> {
         val tokens = mutableListOf<Token>()
         var src = source.trim()
-        for ((pattern, replaceWith) in replacements) src = pattern.toPattern().matcher(src).replaceAll(replaceWith)
+        for ((pattern, replaceWith) in replacements) {
+            while (pattern.find(src) != null) src = pattern.replaceFirst(src, replaceWith.trim())
+        }
+
         for ((pattern, replaceWith) in advancedReplacements) src = pattern.replace(src, replaceWith)
         val source = src
 
@@ -232,6 +235,13 @@ class Lexer(val source: String) {
                                 break
                             }
                         }
+                    }
+
+                    if (str.isNotEmpty()) {
+                        tokens.add(Token(
+                            TokenType.UNKNOWN_SYMBOL,
+                            str
+                        ))
                     }
                 }
             }

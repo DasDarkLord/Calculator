@@ -9,10 +9,19 @@ import parser.TreeNode;
 
 public final class AnyArgument extends Argument<Object> {
 
+    private boolean undefinedZero = true;
+
+    public AnyArgument() {
+    }
+
+    public AnyArgument(boolean undefinedZero) {
+        this.undefinedZero = undefinedZero;
+    }
+
     @Override
     public Object accept(TreeNode tree) {
         Object evaluated = Evaluator.Companion.evaluateTree(tree, null);
-        if (evaluated instanceof Undefined) return 0.0;
+        if (undefinedZero && evaluated instanceof Undefined) return 0.0;
         return evaluated;
     }
 

@@ -37,11 +37,11 @@ object ListAddFunction : ClassFunction<MutableList<*>> {
             .addElement(AlternateSetElement(
                 OrderedSetElement(
                     SingletonNode("index", NumberArgument()),
-                    SingletonNode("value", AnyArgument())
+                    SingletonNode("value", AnyArgument(false))
                 ),
                 OrderedSetElement(
                     StaticNode("index", null),
-                    SingletonNode("value", AnyArgument())
+                    SingletonNode("value", AnyArgument(false))
                 )
             ))
 
@@ -78,7 +78,7 @@ object MapAddFunction : ClassFunction<MutableMap<*, *>> {
     override val patternSet: PatternSet
         get() = PatternSet()
             .addElement(SingletonNode("key", StringArgument()))
-            .addElement(SingletonNode("value", AnyArgument()))
+            .addElement(SingletonNode("value", AnyArgument(false)))
 
     override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
         affected as MutableMap<*, *>
@@ -95,7 +95,7 @@ object ReplaceFunction : ClassFunction<String> {
     override val patternSet: PatternSet
         get() = PatternSet()
             .addElement(SingletonNode("replace", StringArgument(), RegexArgument()))
-            .addElement(SingletonNode("value", AnyArgument()))
+            .addElement(SingletonNode("value", AnyArgument(false)))
 
     override fun execute(affected: Any, argumentSet: ArgumentSet): Any {
         affected as String
