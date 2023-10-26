@@ -229,6 +229,7 @@ class Lexer(val source: String) {
 
                                 val range = IntRange(str.indexOf(op), str.indexOf(op) + op.length - 1)
                                 str = str.removeRange(range)
+                                break
                             }
                         }
                     }

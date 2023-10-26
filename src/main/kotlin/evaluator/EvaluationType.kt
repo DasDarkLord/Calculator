@@ -10,6 +10,7 @@ import prettierVersion
 import utils.multifactorial
 import utils.numToDouble
 import java.lang.Exception
+import kotlin.math.E
 import kotlin.math.pow
 
 abstract class LeftRightEvaluationType : EvaluationType {
@@ -536,5 +537,30 @@ object FactorialEvaluationType : LeftRightEvaluationType() {
 
     override val forType: String
         get() = "factorial"
+
+}
+
+object IfEvaluationType : EvaluationType {
+    private fun evaluate(left: TreeNode?, right: TreeNode, value: TreeNode, label: String): Any {
+        val condition = Evaluator.evaluateTree(value)
+        if (condition as? Boolean != null) {
+            if (condition) return Evaluator.evaluateTree(right)
+            else {
+                if (left == null) return 0.0
+                else return Evaluator.evaluateTree(left)
+            }
+        }
+
+        return 0.0 // Should I return Undefined or 0 here
+    }
+
+    override val forType: String
+        get() = "conditional"
+    override val aliases: List<String>
+        get() = emptyList()
+
+    override fun evaluate(tree: TreeNode, label: String): Any {
+        return evaluate(tree.left, tree.right!!, tree.value!! as TreeNode, label)
+    }
 
 }

@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
 
         val result = Evaluator.evaluateTree(tree)
         println(prettierVersion(result))
-        print("\u001b[0m") // reset ansi formatting
+        print("\u001b[0m")
     }
 }
 
@@ -53,7 +53,7 @@ fun printColored(tokens: List<Token>) {
             TokenType.STRING -> "\u001b[38;5;87m\"" + fixEscapes(prettierVersion(token.value)) + "\""
             TokenType.IDENTIFIER -> "\u001b[38;5;221m" + backticksIfNeeded(prettierVersion(token.value))
             TokenType.CLASS_FUNCTION_CALL -> "\u001B[38;5;231m.\u001b[38;5;147m" + prettierVersion(token.value)
-            TokenType.FUNCTION_CALL -> "\u001b[38;5;147m" + backticksIfNeeded(prettierVersion(token.value), true)
+            TokenType.FUNCTION_CALL, TokenType.IF, TokenType.ELSE -> "\u001b[38;5;147m" + backticksIfNeeded(prettierVersion(token.value), true)
             TokenType.IMPLICIT_MULTIPLICATION, TokenType.UNDEFINED -> "\u001b[37m" + prettierVersion(token.value)
             TokenType.TRUE, TokenType.FALSE -> "\u001b[38;5;10m" + prettierVersion(token.value)
             TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS -> "\u001b[38;5;${depthColor}m" + prettierVersion(token.value)

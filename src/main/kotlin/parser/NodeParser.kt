@@ -51,11 +51,51 @@ class NodeParser(private val tokens: MutableList<Token>) {
         }
 
         index++
-        return TreeNode(
+        return parseOtherStuff(TreeNode(
             "func_call",
             value = token.value,
             arguments = treeArguments
-        )
+        ))
+    }
+
+    private fun parseIf(): TreeNode {
+        val token = tokens[index]
+        if (tokens.size < index + 1) error("Expected opening parenthesis, got nothing")
+        val nextToken = tokens[index + 1]
+        if (nextToken.type != TokenType.OPEN_PARENTHESIS) error("Expected opening parenthesis, got ${nextToken.type}")
+        index += 2
+
+        val parenthesisExpression = parseExpression()
+        if (tokens[index].type != TokenType.CLOSED_PARENTHESIS) error("Expected closing parenthesis, got ${tokens[index].type}")
+        index++
+
+        if (tokens[index].type == TokenType.IMPLICIT_MULTIPLICATION) index++
+
+        val startCurly = tokens[index].type == TokenType.OPEN_CURLY
+        if (startCurly) index++
+
+        val ifExpression = parseExpression()
+        if (startCurly && tokens[index].type != TokenType.CLOSED_CURLY) error("Expected closing brackets, got ${tokens[index].type}")
+
+        var elseExpression: TreeNode? = null
+
+        if (startCurly) index++
+        if (index < tokens.size && tokens[index].type == TokenType.ELSE) {
+            index++
+
+            val startCurly = tokens[index].type == TokenType.OPEN_CURLY
+            if (startCurly) index++
+
+            elseExpression = parseExpression()
+            if (startCurly && tokens[index].type != TokenType.CLOSED_CURLY) error("Expected closing brackets, got ${tokens[index].type}")
+        }
+
+        return parseOtherStuff(TreeNode(
+            token.type.id,
+            right = ifExpression,
+            left = elseExpression,
+            value = parenthesisExpression
+        ))
     }
 
     private fun parseOtherStuff(node: TreeNode): TreeNode {
@@ -307,7 +347,7 @@ class NodeParser(private val tokens: MutableList<Token>) {
     private fun parseEqualsTernary(): TreeNode {
         var leftNode = parseColon()
 
-        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.NOT_EQUALS || tokens[index].type == TokenType.LESS|| tokens[index].type == TokenType.LESS_EQUAL|| tokens[index].type == TokenType.GREATER_EQUAL|| tokens[index].type == TokenType.GREATER    || tokens[index].type == TokenType.TERNARY)) {
+        while (index < tokens.size && (tokens[index].type == TokenType.EQUALS || tokens[index].type == TokenType.NOT_EQUALS || tokens[index].type == TokenType.LESS || tokens[index].type == TokenType.LESS_EQUAL || tokens[index].type == TokenType.GREATER_EQUAL|| tokens[index].type == TokenType.GREATER || tokens[index].type == TokenType.TERNARY)) {
             val operator = tokens[index].type.id
             index++
             val rightNode = parseColon()
@@ -416,6 +456,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
             return parseFalse()
         } else if (tokens[index].type == TokenType.ENDISTIC) {
             return parseEndistic()
+        } else if (tokens[index].type == TokenType.IF) {
+            return parseIf()
         } else if (tokens[index].type == TokenType.OPEN_PARENTHESIS) {
             index++
             val expressionNode = parseExpression()
@@ -463,7 +505,8 @@ class NodeParser(private val tokens: MutableList<Token>) {
                 TokenType.ADDITION, TokenType.MULTIPLICATION, TokenType.SUBTRACTION, TokenType.DIVISION, TokenType.EXPONENTIATION, TokenType.IMPLICIT_MULTIPLICATION, TokenType.FACTORIAL,
                 TokenType.OPEN_PARENTHESIS, TokenType.CLOSED_PARENTHESIS, TokenType.OPEN_BRACKET, TokenType.CLOSED_BRACKET, TokenType.OPEN_CURLY, TokenType.CLOSED_CURLY,
                 TokenType.FUNCTION_CALL, TokenType.CLASS_FUNCTION_CALL, TokenType.COMMA,
-                TokenType.ASSIGN, TokenType.EQUALS, TokenType.TERNARY, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON
+                TokenType.ASSIGN, TokenType.TERNARY, TokenType.WHITESPACE, TokenType.COALESCING, TokenType.COLON, TokenType.IF, TokenType.ELSE,
+                TokenType.EQUALS, TokenType.GREATER_EQUAL, TokenType.LESS_EQUAL, TokenType.GREATER, TokenType.LESS
             )
             val valueTokenTypes = listOf(
                 TokenType.NUMBER, TokenType.STRING

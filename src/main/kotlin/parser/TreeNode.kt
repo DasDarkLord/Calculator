@@ -16,10 +16,9 @@ data class TreeNode(val type: String, val left: TreeNode? = null, val right: Tre
             else if (value is String) json.addProperty("value", value)
             else if (value is TreeNode) json.add("value", value.jsonObject())
             else json.addProperty("value", value.toString())
-        } else {
-            json.add("left", left!!.jsonObject())
-            json.add("right", right!!.jsonObject())
         }
+        if (left != null) json.add("left", left.jsonObject())
+        if (right != null) json.add("right", right.jsonObject())
         if (arguments != null) {
             val argsArr = JsonArray()
             for (tree in arguments) argsArr.add(tree.jsonObject())

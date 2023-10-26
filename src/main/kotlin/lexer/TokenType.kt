@@ -12,6 +12,8 @@ enum class TokenType {
     // Functions
     CLASS_FUNCTION_CALL("func_call0"),
     FUNCTION_CALL("func_call"),
+    IF("conditional", word = "if"),
+    ELSE("else", word = "else"),
 
     // Operators
     ADDITION("add", '+'),

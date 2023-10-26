@@ -64,7 +64,6 @@ val functions = mapOf(
     listOf("invoke") to InvokeFunction,
     listOf("invokeTo") to InvokeClassFunction,
     listOf("write") to WriteFunction,
-    listOf("if") to IfFunction,
     listOf("eval") to EvalFunction
 )
 
@@ -637,20 +636,6 @@ object BooleanFunction : CalcFunc {
         if (value is Number) return value.toInt() > 0
         if (value is String) return value == "true"
         return false
-    }
-
-}
-
-object IfFunction : CalcFunc {
-    override val patternSet: PatternSet
-        get() = PatternSet()
-            .addElement(SingletonNode("boolean", BooleanArgument()))
-            .addElement(SingletonNode("expression1", TreeNodeArgument()))
-            .addElement(SingletonNode("expression2", TreeNodeArgument()))
-
-    override fun execute(argumentSet: ArgumentSet): Any {
-        if (argumentSet.getValue("boolean")) return Evaluator.evaluateTree(argumentSet.getValue("expression1"))
-        else return Evaluator.evaluateTree(argumentSet.getValue("expression2"))
     }
 
 }
