@@ -85,8 +85,12 @@ class Lexer(val source: String) {
 
                     var str = ""
                     var prev = '\u0000'
+                    var closed = false
                     while (position < source.length) {
-                        if (source[position] == startChar && prev != '\\') break
+                        if (source[position] == startChar && prev != '\\') {
+                            closed = true
+                            break
+                        }
                         if (prev == '\\') {
                             when (source[position]) {
                                 'n' -> str += "\n"
@@ -112,6 +116,7 @@ class Lexer(val source: String) {
                     tokens.add(Token(
                         TokenType.STRING,
                         str,
+                        closed
                     ))
                 }
                 source[position].isLetter() || source[position] == '`' -> {
@@ -185,9 +190,11 @@ class Lexer(val source: String) {
 
                     var str = ""
 
+                    var closed = false
                     while (position < source.length) {
                         if (inBackticks) {
                             if (source[position] == '`') {
+                                closed = true
                                 position++
                                 break
                             }
@@ -203,7 +210,8 @@ class Lexer(val source: String) {
 
                     tokens.add(Token(
                         TokenType.CLASS_FUNCTION_CALL,
-                        str
+                        str,
+                        closed
                     ))
                 }
                 else -> {

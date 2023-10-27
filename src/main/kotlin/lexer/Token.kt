@@ -2,7 +2,7 @@ package lexer
 
 import com.google.gson.JsonObject
 
-class Token(val type: TokenType, val value: Any) {
+class Token(val type: TokenType, val value: Any, var unfinished: Boolean = false) {
 
     override fun toString(): String {
         val json = JsonObject()
