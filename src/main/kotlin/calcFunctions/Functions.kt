@@ -40,6 +40,8 @@ val functions = mapOf(
     listOf("sign", "signum") to SignFunction,
     listOf("s", "successor") to SuccessorFunction,
     listOf("root") to RootFunction,
+    listOf("sqrt") to SqrtFunction,
+    listOf("cbrt") to CbrtFunction,
     listOf("log", "logarithm") to LogFunction,
     listOf("log2", "logarithm2") to Log2Function,
     listOf("log10", "logarithm10") to Log10Function,
@@ -51,7 +53,9 @@ val functions = mapOf(
     listOf("cotanh", "canh", "cotangenth", "ctangenth") to HyperbolicCotangentFunction,
     listOf("csech", "cosech", "cosecanth", "csecanth") to HyperbolicCoSecantFunction,
     listOf("len", "length") to LengthFunction,
-    listOf("multifactorial") to MultiFactorialFunction,
+    listOf("multifactorial", "multifact", "mfact") to MultiFactorialFunction,
+    listOf("factorial", "fact") to FactorialFunction,
+    listOf("factorial2", "fact2") to Factorial2Function,
     listOf("round") to RoundFunction,
     listOf("parseNumber", "parsenum", "parseNum", "parsenumber", "num", "number") to ParseNumberFunction,
     listOf("str", "string") to AsStringFunction,
@@ -64,7 +68,9 @@ val functions = mapOf(
     listOf("invoke") to InvokeFunction,
     listOf("invokeTo") to InvokeClassFunction,
     listOf("write") to WriteFunction,
-    listOf("eval") to EvalFunction
+    listOf("eval") to EvalFunction,
+    listOf("gamma") to GammaFunction,
+    listOf("integrate", "integral") to IntegrateFunction,
 )
 
 fun functionExists(name: String): Boolean {
@@ -302,6 +308,29 @@ object RootFunction : CalcFunc {
 
         return number.pow(1.0 / index)
     }
+
+}
+
+object SqrtFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("number", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return sqrt(argumentSet.getValue("number"))
+    }
+
+}
+
+object CbrtFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("number", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return cbrt(argumentSet.getValue("number"))
+    }
+
 }
 
 object Log10Function : CalcFunc {
@@ -436,10 +465,32 @@ object MultiFactorialFunction : CalcFunc {
         get() = PatternSet()
             .addElement(SingletonNode("number", NumberArgument()))
             .addElement(SingletonNode("factorial", NumberArgument())
-                            .setOptional(1.0))
+                .setOptional(1.0))
 
     override fun execute(argumentSet: ArgumentSet): Any {
         return multifactorial(argumentSet.getValue("number"), argumentSet.getValue("factorial"))
+    }
+
+}
+
+object FactorialFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("number", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return multifactorial(argumentSet.getValue("number"), 1.0)
+    }
+
+}
+
+object Factorial2Function : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("number", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return multifactorial(argumentSet.getValue("number"), 2.0)
     }
 
 }
@@ -650,6 +701,43 @@ object EvalFunction : CalcFunc {
         val tokens = Lexer(expression).lexTokens()
         val node = NodeParser.parseTokens(tokens)
         return Evaluator.evaluateTree(node)
+    }
+
+}
+
+object GammaFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("p", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        return gamma(argumentSet.getValue("p"))
+    }
+
+}
+
+object IntegrateFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(SingletonNode("f", TreeNodeArgument()))
+            .addElement(SingletonNode("a", NumberArgument()))
+            .addElement(SingletonNode("b", NumberArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        val f: (Double)->Double = {
+            val r = Evaluator.evaluateTree(argumentSet.getValue("f"), mapOf(
+                listOf("x", "X") to it
+            ))
+
+            if (r is Number) r.toDouble()
+            else 0.0
+        }
+
+        return integrate(
+            argumentSet.getValue("a"),
+            argumentSet.getValue("b"),
+            f
+        )
     }
 
 }

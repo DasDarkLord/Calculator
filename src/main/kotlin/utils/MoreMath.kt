@@ -1,5 +1,9 @@
 package utils
 
+import org.apache.commons.math3.analysis.UnivariateFunction
+import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator
+import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.math.*
 
 fun cot(x: Double): Double {
@@ -26,14 +30,15 @@ fun csch(x: Double): Double {
     return 1.0 / sinh(x)
 }
 
-fun multifactorial(x: Double, f: Double): Double {
-    if (x < 0 || x == 1.0) return x
-
-    return x * multifactorial(x - f, f)
+fun multifactorial(number: Double, factorial: Double = 1.0, i: Int = 0): Double {
+    if (number < 0) return Double.NaN
+    if (factorial == 1.0) return number.gammaFactorial()
+    if (number <= factorial) return number
+    return number * multifactorial(number - factorial, factorial, i + 1)
 }
 
-fun negativeFactorial(x: Double): Double {
-    return gammaLanczos(x)
+fun Double.gammaFactorial(): Double {
+    return gamma(this + 1)
 }
 
 fun gammaLanczos(x: Double): Double {
@@ -56,4 +61,21 @@ fun gammaLanczos(x: Double): Double {
     val t = xx + g + 0.5
     for (i in 1 until p.size) a += p[i] / (xx + i)
     return Math.sqrt(2.0 * Math.PI) * Math.pow(t, xx + 0.5) * Math.exp(-t) * a
+}
+
+fun gamma(x: Double): Double {
+    val bigDecimal = BigDecimal(gammaLanczos(x)).setScale(8, RoundingMode.HALF_UP)
+    return bigDecimal.toDouble()
+}
+
+fun integrate(a: Double, b: Double, f: (Double)->Double): Double {
+    val value = integral(
+        a,
+        b,
+        10000,
+        ::simpson,
+        f
+    )
+    val bigDecimal = BigDecimal(value).setScale(2, RoundingMode.HALF_UP)
+    return bigDecimal.toDouble()
 }

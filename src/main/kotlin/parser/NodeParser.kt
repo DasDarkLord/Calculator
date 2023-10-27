@@ -472,13 +472,13 @@ class NodeParser(private val tokens: MutableList<Token>) {
                     val nextToken = tokens[nextIndex]
                     if (nextToken.type == TokenType.NUMBER) {
                         tokens.removeAt(index)
+                        tokens.removeAt(index)
                         tokens.add(index, Token(
                             TokenType.NUMBER,
                             -((nextToken.value as Number).toDouble())
                         ))
 
-                        index++
-                        return parseOtherStuff(TreeNode("number", value = -((nextToken.value as Number).toDouble())))
+                        return parseFactor()
                     } else if (nextToken.type == TokenType.IDENTIFIER || nextToken.type == TokenType.FUNCTION_CALL || nextToken.type == TokenType.OPEN_PARENTHESIS) {
                         tokens.add(index, Token(
                             TokenType.NUMBER,

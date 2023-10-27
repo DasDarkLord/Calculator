@@ -3,11 +3,10 @@ import lexer.Lexer
 import lexer.Token
 import lexer.TokenType
 import parser.NodeParser
-import java.io.OutputStream
+import utils.integral
+import utils.simpson
 import java.io.PrintStream
-import java.text.DecimalFormat
-import java.util.Scanner
-import kotlin.math.floor
+import java.util.*
 
 fun main(args: Array<String>) {
     System.setErr(PrintStreamImpl()) // to disable SLF4J errors (i hate them)
@@ -102,7 +101,7 @@ fun prettierVersion(input: Any): String {
     if (input is Number) {
         if (input is Double || input is Float) {
             val d = input.toDouble()
-            if (d != d.toInt().toDouble()) return d.toString()
+            if (d != d.toInt().toDouble()) return d.toBigDecimal().toPlainString()
             return d.toInt().toString()
         } else return input.toString()
     }

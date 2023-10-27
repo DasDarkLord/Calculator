@@ -9,15 +9,22 @@ import calcFunctions.userFunctions
 import utils.deepCopy
 
 class Lexer(val source: String) {
+    var replacementsEnabled = true
+
+    fun replacements(r: Boolean) {
+        replacementsEnabled = r
+    }
 
     fun lexTokens(): MutableList<Token> {
         val tokens = mutableListOf<Token>()
         var src = source
-        for ((pattern, replaceWith) in replacements) {
-            while (pattern.find(src) != null) src = pattern.replaceFirst(src, replaceWith.trim())
-        }
+        if (replacementsEnabled) {
+            for ((pattern, replaceWith) in replacements) {
+                while (pattern.find(src) != null) src = pattern.replaceFirst(src, replaceWith.trim())
+            }
 
-        for ((pattern, replaceWith) in advancedReplacements) src = pattern.replace(src, replaceWith)
+            for ((pattern, replaceWith) in advancedReplacements) src = pattern.replace(src, replaceWith)
+        }
         val source = src
 
         var position = 0

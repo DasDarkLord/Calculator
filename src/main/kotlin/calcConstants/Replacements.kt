@@ -2,11 +2,7 @@ package calcConstants
 
 import kotlin.math.exp
 
-val replacements = mapOf(
-    Regex("sqrt\\((.+)\\)") to "root($1, 2)",
-    Regex("cbrt\\((.+)\\)") to "root($1, 3)",
-    Regex("factorial\\((.+)\\)") to "multifactorial($1, 1)",
-    Regex("factorial2\\((.+)\\)") to "multifactorial($1, 2)",
+val replacements = mapOf<Regex, String>(
 )
 
 val advancedReplacements = mapOf<Regex, (MatchResult) -> CharSequence>(
