@@ -128,6 +128,7 @@ class Lexer(val source: String) {
                             }
                         }
                         else if (!(source[position].isLetter() || source[position].isDigit() || source[position] == '_')) break
+                        if (amountDigit > 0 && !source[position].isDigit()) break
 
                         str += source[position]
                         if (!startWithBacktick) if (source[position].isDigit()) amountDigit++
