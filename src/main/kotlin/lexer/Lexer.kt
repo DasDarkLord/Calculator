@@ -12,7 +12,7 @@ class Lexer(val source: String) {
 
     fun lexTokens(): MutableList<Token> {
         val tokens = mutableListOf<Token>()
-        var src = source.trim()
+        var src = source
         for ((pattern, replaceWith) in replacements) {
             while (pattern.find(src) != null) src = pattern.replaceFirst(src, replaceWith.trim())
         }
