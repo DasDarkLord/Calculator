@@ -3,8 +3,6 @@ import lexer.Lexer
 import lexer.Token
 import lexer.TokenType
 import parser.NodeParser
-import utils.integral
-import utils.simpson
 import java.io.PrintStream
 import java.util.*
 

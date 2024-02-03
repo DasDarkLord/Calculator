@@ -67,7 +67,8 @@ val functions = mapOf(
     listOf("identifier", "id", "var", "variable") to IdentifierFunction,
     listOf("invoke") to InvokeFunction,
     listOf("invokeTo") to InvokeClassFunction,
-    listOf("write") to WriteFunction,
+    listOf("write", "print") to WriteFunction,
+    listOf("writeln", "println") to WriteLnFunction,
     listOf("eval") to EvalFunction,
     listOf("gamma") to GammaFunction,
     listOf("integrate", "integral") to IntegrateFunction,
@@ -655,6 +656,22 @@ object WriteFunction : CalcFunc {
         for (m in argumentSet.getVarargValue<Any>("m")) {
             print(m)
         }
+
+        return 0
+    }
+
+}
+
+object WriteLnFunction : CalcFunc {
+    override val patternSet: PatternSet
+        get() = PatternSet()
+            .addElement(VarargsNode("m", AnyArgument()))
+
+    override fun execute(argumentSet: ArgumentSet): Any {
+        for (m in argumentSet.getVarargValue<Any>("m")) {
+            print(m)
+        }
+        println()
 
         return 0
     }

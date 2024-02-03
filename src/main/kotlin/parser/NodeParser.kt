@@ -58,6 +58,17 @@ class NodeParser(private val tokens: MutableList<Token>) {
         ))
     }
 
+    private fun parseScope(): TreeNode {
+        val startCurly = tokens[index].type == TokenType.OPEN_CURLY
+        if (startCurly) index++
+
+        val scopeExpr = parseExpression()
+        if (startCurly && tokens[index].type != TokenType.CLOSED_CURLY) error("Expected closing brackets, got ${tokens[index].type}")
+        if (startCurly) index++
+
+        return parseOtherStuff(scopeExpr)
+    }
+
     private fun parseIf(): TreeNode {
         val token = tokens[index]
         if (tokens.size < index + 1) error("Expected opening parenthesis, got nothing")
@@ -74,20 +85,13 @@ class NodeParser(private val tokens: MutableList<Token>) {
         val startCurly = tokens[index].type == TokenType.OPEN_CURLY
         if (startCurly) index++
 
-        val ifExpression = parseExpression()
-        if (startCurly && tokens[index].type != TokenType.CLOSED_CURLY) error("Expected closing brackets, got ${tokens[index].type}")
+        val ifExpression = parseScope()
 
         var elseExpression: TreeNode? = null
-
-        if (startCurly) index++
         if (index < tokens.size && tokens[index].type == TokenType.ELSE) {
             index++
 
-            val startCurly = tokens[index].type == TokenType.OPEN_CURLY
-            if (startCurly) index++
-
-            elseExpression = parseExpression()
-            if (startCurly && tokens[index].type != TokenType.CLOSED_CURLY) error("Expected closing brackets, got ${tokens[index].type}")
+            elseExpression = parseScope()
         }
 
         return parseOtherStuff(TreeNode(
@@ -551,13 +555,13 @@ class NodeParser(private val tokens: MutableList<Token>) {
             }
 
             while (openBracket > 0) {
-                newTokens.add(Token(TokenType.CLOSED_BRACKET, ")"))
-                openParen--
+                newTokens.add(Token(TokenType.CLOSED_BRACKET, "]"))
+                openBracket--
             }
 
             while (openCurly > 0) {
-                newTokens.add(Token(TokenType.CLOSED_CURLY, ")"))
-                openParen--
+                newTokens.add(Token(TokenType.CLOSED_CURLY, "}"))
+                openCurly--
             }
 
             return NodeParser(newTokens).parseExpression()

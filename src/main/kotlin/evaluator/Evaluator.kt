@@ -1,25 +1,19 @@
 package evaluator
 
-import org.reflections.Reflections
-import org.reflections.util.ConfigurationBuilder
 import parser.TreeNode
-import java.lang.reflect.Field
-import java.util.concurrent.CompletableFuture
 
 class Evaluator {
     companion object {
-        private val reflections = Reflections(ConfigurationBuilder()
-            .forPackage("evaluator"))
-
-        private val types = reflections.getSubTypesOf(EvaluationType::class.java).map { type ->
-            val instanceField: Field?
-            try{
-                instanceField = type.getDeclaredField("INSTANCE")
-            } catch (nsfe: NoSuchFieldException) {
-                return@map null
-            }
-            return@map instanceField.get(null) as EvaluationType
-        }.filterNotNull()
+        private val types = listOf(
+            NumberEvaluationType, StringEvaluationType, TrueEvaluationType, FalseEvaluationType, UndefinedEvaluationType,
+            AddEvaluationType, SubEvaluationType, MulEvaluationType, DivEvaluationType, PowEvaluationType, ModulusEvaluationType, FactorialEvaluationType,
+            IfEvaluationType,
+            IndexEvaluationType, CoalescingEvaluationType, TernaryEvaluationType, AssignEvaluationType,
+            LessEqualsEvaluationType, GreaterEvaluationType, LessEvaluationType, GreaterEqualsEvaluationType, NotEqualsEvaluationType, EqualsEvaluationType,
+            ListEvaluationType, DictionaryEvaluationType,
+            ClassFunctionEvaluationType, FunctionEvaluationType,
+            IdEvaluationType
+        )
 
         fun evaluateTree(tree: TreeNode, constants: Map<List<String>, Any>? = null): Any {
             val uConsts = calcConstants.constants
